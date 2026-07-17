@@ -1,6 +1,7 @@
 """Preview generation for detection results.
 
-Generates Raw, Flatten, and Canonical previews.
+Generates Raw and Flatten previews.
+Canonical preview is canonical layer responsibility.
 UI should only render these — never generate them.
 """
 
@@ -71,33 +72,4 @@ def generate_flatten_preview(
     return pl.DataFrame(rows)
 
 
-def generate_canonical_preview(
-    flatten_preview: Optional[pl.DataFrame],
-    candidate_columns: dict,
-    max_rows: int = 10,
-) -> Optional[pl.DataFrame]:
-    """Generate canonical preview — mapped column names."""
-    if flatten_preview is None:
-        return None
 
-    # Take first max_rows
-    df = flatten_preview.head(max_rows)
-
-    # Create column mapping
-    mapping = {}
-    for role, candidates in candidate_columns.items():
-        if candidates:
-            best = candidates[0] if hasattr(candidates[0], 'physical_column') else None
-            if best:
-                mapping[best.physical_column] = role
-
-    # Rename columns where mapping exists
-    rename_map = {}
-    for col in df.columns:
-        if col in mapping:
-            rename_map[col] = mapping[col]
-
-    if rename_map:
-        df = df.rename(rename_map)
-
-    return df

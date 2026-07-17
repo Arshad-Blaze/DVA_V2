@@ -5,7 +5,6 @@ import pytest
 from dav_platform.detection.previews import (
     generate_raw_preview,
     generate_flatten_preview,
-    generate_canonical_preview,
 )
 from dav_platform.core.contracts import FileType, RecordTypeInfo
 
@@ -48,14 +47,4 @@ class TestGenerateFlattenPreview:
         assert df is None
 
 
-class TestGenerateCanonicalPreview:
-    def test_with_mapping(self):
-        import polars as pl
-        df = pl.DataFrame({"field_0": ["Apple"], "field_1": ["1.50"]})
-        candidates = {"price": [type('obj', (object,), {'physical_column': 'field_1'})()]}
-        result = generate_canonical_preview(df, candidates)
-        assert result is not None
 
-    def test_none_preview(self):
-        result = generate_canonical_preview(None, {})
-        assert result is None

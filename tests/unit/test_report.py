@@ -2,7 +2,7 @@
 
 import pytest
 
-from dav_platform.detection.report import generate_discovery_report, DiscoveryReport
+from dav_platform.shared.report import generate_discovery_report, DiscoveryReport
 from dav_platform.core.contracts import (
     DiscoveryResult,
     FileType,

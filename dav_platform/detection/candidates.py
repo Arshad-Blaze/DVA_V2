@@ -31,6 +31,29 @@ ROLE_KEYWORDS: Dict[str, List[str]] = {
     "record_type": ["record_type", "rec_type", "type", "prefix", "line_type"],
 }
 
+# Mapping from role name to DiscoveryResult field name
+ROLE_MAP: Dict[str, str] = {
+    "store": "candidate_store",
+    "upc": "candidate_upc",
+    "description": "candidate_description",
+    "brand": "candidate_brand",
+    "department": "candidate_department",
+    "category": "candidate_category",
+    "units": "candidate_units",
+    "weighted_qty": "candidate_weighted_qty",
+    "price": "candidate_price",
+    "sales": "candidate_sales",
+    "currency": "candidate_currency",
+    "date": "candidate_date",
+    "time": "candidate_time",
+    "promotion": "candidate_promotion",
+    "store_type": "candidate_store_type",
+    "region": "candidate_region",
+    "division": "candidate_division",
+    "uom": "candidate_uom",
+    "record_type": "candidate_record_type",
+}
+
 
 def detect_candidate_columns(columns: List[str]) -> Dict[str, List[CandidateMapping]]:
     """Detect candidate column mappings for all 19 business roles.

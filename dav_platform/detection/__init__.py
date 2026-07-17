@@ -9,9 +9,7 @@ Responsibilities:
 - Generate candidate column mappings (19 roles)
 - Compute confidence scores
 - Generate statistics
-- Generate previews (raw, flatten, canonical)
-- Generate discovery reports
-- Recommend quantity columns
+- Generate previews (raw, flatten)
 - Support Excel workbook discovery
 
 Output: DiscoveryResult (ONLY source of truth)
@@ -27,10 +25,8 @@ from dav_platform.detection.confidence import compute_confidence_score
 from dav_platform.detection.encoding import detect_encoding
 from dav_platform.detection.layout import detect_column_breaks, generate_layout_fields
 from dav_platform.detection.statistics import collect_statistics
-from dav_platform.detection.quantity import recommend_quantity_column
 from dav_platform.detection.excel import discover_excel_sheets
-from dav_platform.detection.previews import generate_raw_preview, generate_flatten_preview, generate_canonical_preview
-from dav_platform.detection.report import generate_discovery_report
+from dav_platform.detection.previews import generate_raw_preview, generate_flatten_preview
 
 __all__ = [
     "DetectionEngine",
@@ -45,10 +41,7 @@ __all__ = [
     "detect_column_breaks",
     "generate_layout_fields",
     "collect_statistics",
-    "recommend_quantity_column",
     "discover_excel_sheets",
     "generate_raw_preview",
     "generate_flatten_preview",
-    "generate_canonical_preview",
-    "generate_discovery_report",
 ]

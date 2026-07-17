@@ -2,7 +2,7 @@
 
 import pytest
 
-from dav_platform.detection.quantity import recommend_quantity_column
+from dav_platform.shared.quantity import recommend_quantity_column
 from dav_platform.core.contracts import CandidateMapping, QuantityRecommendation
 
 

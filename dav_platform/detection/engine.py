@@ -5,24 +5,19 @@ No downstream layer may re-detect.
 """
 
 import os
-from typing import Dict, List, Optional
-
-import polars as pl
+from typing import Dict, List
 
 from dav_platform.core.contracts import (
     IDataSource,
     CandidateMapping,
     DiscoveryResult,
-    EncodingType,
-    ExcelSheetInfo,
     FileType,
-    LayoutField,
-    RecordTypeInfo,
+    QuantityRecommendation,
 )
-from dav_platform.detection.candidates import detect_candidate_columns
+from dav_platform.detection.candidates import detect_candidate_columns, ROLE_MAP
 from dav_platform.detection.confidence import compute_confidence_score
 from dav_platform.detection.context import DiscoveryContext
-from dav_platform.detection.delimiter import detect_delimiter, validate_delimiter_consistency
+from dav_platform.detection.delimiter import detect_delimiter
 from dav_platform.detection.encoding import detect_encoding
 from dav_platform.detection.excel import discover_excel_sheets, select_candidate_sheet
 from dav_platform.detection.header import detect_header, detect_header_prefix
@@ -30,16 +25,13 @@ from dav_platform.detection.layout import detect_column_breaks, generate_layout_
 from dav_platform.detection.multiline import (
     build_record_hierarchy,
     detect_multiline,
-    detect_record_types,
     detect_record_types_detailed,
     detect_trailer_prefix,
 )
 from dav_platform.detection.previews import (
-    generate_canonical_preview,
     generate_flatten_preview,
     generate_raw_preview,
 )
-from dav_platform.detection.quantity import recommend_quantity_column
 from dav_platform.detection.statistics import collect_statistics
 
 
@@ -59,13 +51,9 @@ class DetectionEngine:
         This is the single entry point that fully describes a file.
         Downstream layers MUST consume this result instead of re-detecting.
         """
-        # Build internal context
         ctx = self._build_context(file_path)
-
-        # Detect file type
         file_type, delimiter, scores = self._detect_file_type(file_path, ctx)
 
-        # Initialize result
         result = DiscoveryResult(
             file_path=file_path,
             file_type=file_type or FileType.UNKNOWN,
@@ -74,9 +62,7 @@ class DetectionEngine:
 
         if file_type is None:
             result.warnings.append("File type could not be determined")
-            result.recommendations.append(
-                "Verify the file format is supported"
-            )
+            result.recommendations.append("Verify the file format is supported")
             result.confidence = 0.0
             return result
 
@@ -93,12 +79,12 @@ class DetectionEngine:
             return self._detect_excel(file_path, result)
 
         # Delimited or Fixed-width processing
-        if file_type in (FileType.DELIMITED, FileType.MULTILINE_DELIMITED):
-            self._detect_delimited(ctx, result, delimiter, scores)
-        elif file_type in (FileType.FIXED_WIDTH, FileType.FIXED_WIDTH_MULTILINE):
+        if file_type == FileType.DELIMITED:
+            self._detect_delimited(ctx, result, delimiter)
+        elif file_type == FileType.FIXED_WIDTH:
             self._detect_fixed_width(ctx, result)
 
-        # Multiline detection (applies to both types)
+        # Multiline detection
         multiline = detect_multiline(ctx.non_empty_lines)
         result.is_multiline = multiline
 
@@ -113,14 +99,10 @@ class DetectionEngine:
             all_candidates = detect_candidate_columns(result.columns)
             self._map_candidates(result, all_candidates)
 
-        # Quantity intelligence
-        qty_candidates = {
-            "weighted_qty": result.candidate_weighted_qty,
-            "units": result.candidate_units,
-        }
-        result.quantity_recommendation = recommend_quantity_column(qty_candidates)
+        # Quantity recommendation (detection suggests, canonical decides)
+        result.quantity_recommendation = self._recommend_quantity(result)
 
-        # Previews
+        # Previews (raw and flatten only — canonical is canonical layer responsibility)
         result.raw_preview = generate_raw_preview(ctx.non_empty_lines)
         if result.columns or result.record_types:
             result.flatten_preview = generate_flatten_preview(
@@ -131,17 +113,6 @@ class DetectionEngine:
                 result.layout_fields,
                 result.header_prefix,
                 result.trailer_prefix,
-            )
-        if result.flatten_preview is not None:
-            candidate_dict = {
-                "store": result.candidate_store,
-                "upc": result.candidate_upc,
-                "description": result.candidate_description,
-                "price": result.candidate_price,
-                "units": result.candidate_units,
-            }
-            result.canonical_preview = generate_canonical_preview(
-                result.flatten_preview, candidate_dict
             )
 
         # Overall confidence
@@ -156,7 +127,10 @@ class DetectionEngine:
             "trailer_prefix": result.trailer_prefix,
         }
         result.confidence = compute_confidence_score(result_dict)
-        result.delimiter_confidence = scores.get(delimiter, 0) / max(sum(scores.values()), 1) if scores and delimiter else 0.0
+        result.delimiter_confidence = (
+            scores.get(delimiter, 0) / max(sum(scores.values()), 1)
+            if scores and delimiter else 0.0
+        )
         result.header_confidence = 1.0 if result.has_header else 0.0
 
         return result
@@ -202,48 +176,42 @@ class DetectionEngine:
         ctx: DiscoveryContext,
         result: DiscoveryResult,
         delimiter: str,
-        scores: dict,
     ) -> None:
         """Detect properties specific to delimited files."""
-        # Header detection
         lines = ctx.non_empty_lines[:1]
         result.has_header = detect_header(lines, delimiter=delimiter)
 
-        # Column detection
         if result.has_header and ctx.non_empty_lines:
             first_line = ctx.non_empty_lines[0].strip()
             result.columns = [col.strip() for col in first_line.split(delimiter)]
 
-        # Multiline check
-        multiline = detect_multiline(ctx.non_empty_lines[:10])
-        result.is_multiline = multiline
+        # Set positional line markers
+        result.header_start_line = 0 if result.has_header else -1
+        result.data_start_line = 1 if result.has_header else 0
 
     def _detect_fixed_width(self, ctx: DiscoveryContext, result: DiscoveryResult) -> None:
         """Detect properties specific to fixed-width files."""
         result.warnings.append("Fixed-width file detected")
         result.recommendations.append("Use Layout Builder to define field positions")
 
-        # Layout intelligence
         breaks = detect_column_breaks(ctx.non_empty_lines)
         if breaks:
-            result.layout_fields = generate_layout_fields(
-                ctx.non_empty_lines, breaks
+            result.layout_fields = generate_layout_fields(ctx.non_empty_lines, breaks)
+            result.layout_confidence = (
+                sum(f.confidence for f in result.layout_fields)
+                / max(len(result.layout_fields), 1)
             )
-            result.layout_confidence = sum(f.confidence for f in result.layout_fields) / max(len(result.layout_fields), 1)
 
     def _detect_multiline_details(self, ctx: DiscoveryContext, result: DiscoveryResult) -> None:
         """Detect multiline-specific properties."""
         lines = ctx.non_empty_lines
 
-        # Record types (detailed)
         result.record_types = detect_record_types_detailed(lines, result.delimiter)
 
-        # Header prefix
         hdr_prefix = detect_header_prefix(lines)
         if hdr_prefix:
             result.header_prefix = hdr_prefix
 
-        # Trailer prefix
         trailer = detect_trailer_prefix(lines)
         if trailer:
             result.trailer_prefix = trailer
@@ -253,7 +221,6 @@ class DetectionEngine:
                 "If the file has trailer records, set trailer_prefix manually"
             )
 
-        # Record hierarchy
         result.record_hierarchy = build_record_hierarchy(result.record_types, lines)
 
     def _detect_excel(self, file_path: str, result: DiscoveryResult) -> DiscoveryResult:
@@ -270,12 +237,43 @@ class DetectionEngine:
                     result.has_header = sheet.has_header
                     break
 
-        # Candidate columns for Excel
         if result.columns:
             all_candidates = detect_candidate_columns(result.columns)
             self._map_candidates(result, all_candidates)
 
         return result
+
+    def _recommend_quantity(self, result: DiscoveryResult) -> QuantityRecommendation:
+        """Recommend which quantity column to use for calculations.
+
+        Detection detects candidates; this recommends strategy.
+        Canonical Layer decides the final quantity mapping.
+        """
+        weighted = result.candidate_weighted_qty
+        units = result.candidate_units
+
+        if weighted and weighted[0].confidence >= 0.5:
+            return QuantityRecommendation(
+                recommendation_type="weighted_qty",
+                recommended_column=weighted[0].physical_column,
+                confidence=weighted[0].confidence,
+                reason="Weighted quantity column detected with sufficient confidence",
+            )
+
+        if units:
+            return QuantityRecommendation(
+                recommendation_type="units",
+                recommended_column=units[0].physical_column,
+                confidence=units[0].confidence,
+                reason="Using units column as quantity source",
+            )
+
+        return QuantityRecommendation(
+            recommendation_type="none",
+            recommended_column=None,
+            confidence=0.0,
+            reason="No quantity columns detected",
+        )
 
     def _map_candidates(
         self,
@@ -283,28 +281,6 @@ class DetectionEngine:
         all_candidates: Dict[str, List[CandidateMapping]],
     ) -> None:
         """Map candidate columns to result fields."""
-        role_map = {
-            "store": "candidate_store",
-            "upc": "candidate_upc",
-            "description": "candidate_description",
-            "brand": "candidate_brand",
-            "department": "candidate_department",
-            "category": "candidate_category",
-            "units": "candidate_units",
-            "weighted_qty": "candidate_weighted_qty",
-            "price": "candidate_price",
-            "sales": "candidate_sales",
-            "currency": "candidate_currency",
-            "date": "candidate_date",
-            "time": "candidate_time",
-            "promotion": "candidate_promotion",
-            "store_type": "candidate_store_type",
-            "region": "candidate_region",
-            "division": "candidate_division",
-            "uom": "candidate_uom",
-            "record_type": "candidate_record_type",
-        }
-
-        for role, field_name in role_map.items():
+        for role, field_name in ROLE_MAP.items():
             if role in all_candidates:
                 setattr(result, field_name, all_candidates[role])
