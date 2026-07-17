@@ -155,6 +155,7 @@ class FileType(Enum):
     FIXED_WIDTH_MULTILINE = "fixed_width_multiline"
     EXCEL = "excel"
     UNKNOWN = "unknown"
+    FIXED = "fixed_width"  # Alias for FIXED_WIDTH
 
 
 @dataclass
