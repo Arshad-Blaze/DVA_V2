@@ -1,12 +1,18 @@
-"""Detection Layer - Heart of the platform.
+"""Detection Layer — Heart of the platform.
 
 Responsibilities:
 - Detect file type (delimited, fixed-width, multiline, Excel)
 - Detect delimiter, encoding, header
-- Detect record types, prefixes
-- Generate previews (raw, flatten, canonical)
+- Detect record types, prefixes (dynamic, not hardcoded)
+- Detect trailer prefix
+- Generate layout intelligence (fixed-width)
+- Generate candidate column mappings (19 roles)
 - Compute confidence scores
-- Generate warnings and recommendations
+- Generate statistics
+- Generate previews (raw, flatten, canonical)
+- Generate discovery reports
+- Recommend quantity columns
+- Support Excel workbook discovery
 
 Output: DiscoveryResult (ONLY source of truth)
 No downstream rediscovery allowed.
@@ -18,6 +24,13 @@ from dav_platform.detection.header import detect_header
 from dav_platform.detection.multiline import detect_multiline, detect_record_types, detect_trailer_prefix
 from dav_platform.detection.candidates import detect_candidate_columns
 from dav_platform.detection.confidence import compute_confidence_score
+from dav_platform.detection.encoding import detect_encoding
+from dav_platform.detection.layout import detect_column_breaks, generate_layout_fields
+from dav_platform.detection.statistics import collect_statistics
+from dav_platform.detection.quantity import recommend_quantity_column
+from dav_platform.detection.excel import discover_excel_sheets
+from dav_platform.detection.previews import generate_raw_preview, generate_flatten_preview, generate_canonical_preview
+from dav_platform.detection.report import generate_discovery_report
 
 __all__ = [
     "DetectionEngine",
@@ -28,4 +41,14 @@ __all__ = [
     "detect_trailer_prefix",
     "detect_candidate_columns",
     "compute_confidence_score",
+    "detect_encoding",
+    "detect_column_breaks",
+    "generate_layout_fields",
+    "collect_statistics",
+    "recommend_quantity_column",
+    "discover_excel_sheets",
+    "generate_raw_preview",
+    "generate_flatten_preview",
+    "generate_canonical_preview",
+    "generate_discovery_report",
 ]

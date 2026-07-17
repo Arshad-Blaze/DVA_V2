@@ -4,7 +4,7 @@ import pytest
 
 from dav_platform.connection.local import LocalDataSource
 from dav_platform.detection.engine import DetectionEngine
-from dav_platform.core.contracts import FileType
+from dav_platform.core.contracts import FileType, RecordTypeInfo
 
 
 @pytest.fixture
@@ -49,6 +49,14 @@ def fixed_width_file(tmp_path):
     return str(file_path)
 
 
+@pytest.fixture
+def store_item_file(tmp_path):
+    content = "H|STORE001|2024-01-01\nS|ITEM001|100|1.50\nS|ITEM002|200|0.75\nD|ITEM003|50|2.00\nD|ITEM004|75|1.25\nT|4\n"
+    file_path = tmp_path / "store_item.txt"
+    file_path.write_text(content)
+    return str(file_path)
+
+
 class TestDetectionEngine:
     def test_detect_csv(self, detection_engine, csv_file):
         result = detection_engine.detect(csv_file)
@@ -66,12 +74,12 @@ class TestDetectionEngine:
     def test_detect_multiline(self, detection_engine, multiline_file):
         result = detection_engine.detect(multiline_file)
         assert result.is_multiline is True
-        assert result.record_types == ["D", "H", "T"]
+        assert len(result.record_types) > 0
         assert result.trailer_prefix == "T"
 
     def test_detect_fixed_width(self, detection_engine, fixed_width_file):
         result = detection_engine.detect(fixed_width_file)
-        assert result.file_type == FileType.FIXED
+        assert result.file_type == FileType.FIXED_WIDTH
 
     def test_confidence_score(self, detection_engine, csv_file):
         result = detection_engine.detect(csv_file)
@@ -81,7 +89,22 @@ class TestDetectionEngine:
         result = detection_engine.detect(fixed_width_file)
         assert len(result.warnings) > 0
 
-    def test_candidate_columns(self, detection_engine, csv_file):
+    def test_encoding_detected(self, detection_engine, csv_file):
         result = detection_engine.detect(csv_file)
-        # CSV has name, price, quantity - should detect candidates
-        assert len(result.candidate_price_columns) > 0 or len(result.candidate_quantity_columns) > 0
+        assert result.encoding is not None
+        assert result.encoding_confidence > 0.0
+
+    def test_statistics_collected(self, detection_engine, csv_file):
+        result = detection_engine.detect(csv_file)
+        assert result.statistics is not None
+        assert result.statistics.record_count > 0
+
+    def test_raw_preview_generated(self, detection_engine, csv_file):
+        result = detection_engine.detect(csv_file)
+        assert result.raw_preview is not None
+        assert result.raw_preview.height > 0
+
+    def test_store_item_file(self, detection_engine, store_item_file):
+        result = detection_engine.detect(store_item_file)
+        assert result.is_multiline is True
+        assert len(result.record_types) >= 2

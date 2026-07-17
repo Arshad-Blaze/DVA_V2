@@ -151,11 +151,84 @@ class IDataSource(ABC):
 class FileType(Enum):
     DELIMITED = "delimited"
     FIXED_WIDTH = "fixed_width"
-    MULTILINE = "multiline"
+    MULTILINE_DELIMITED = "multiline_delimited"
     FIXED_WIDTH_MULTILINE = "fixed_width_multiline"
+    MIXED_RECORD = "mixed_record"
     EXCEL = "excel"
     UNKNOWN = "unknown"
-    FIXED = "fixed_width"  # Alias for FIXED_WIDTH
+    FIXED = "fixed_width"  # Alias
+
+
+class EncodingType(Enum):
+    UTF_8 = "utf-8"
+    UTF_16 = "utf-16"
+    LATIN_1 = "latin-1"
+    ANSI = "ansi"
+    UNKNOWN = "unknown"
+
+
+@dataclass
+class RecordTypeInfo:
+    """Info about a detected record type."""
+    prefix: str
+    frequency: int = 0
+    avg_record_length: float = 0.0
+    sample_line: str = ""
+    confidence: float = 0.0
+
+
+@dataclass
+class LayoutField:
+    """A single field in a fixed-width layout."""
+    start: int = 0
+    width: int = 0
+    datatype: str = "string"
+    probable_name: str = ""
+    confidence: float = 0.0
+
+
+@dataclass
+class ExcelSheetInfo:
+    """Info about an Excel sheet."""
+    name: str = ""
+    row_count: int = 0
+    column_count: int = 0
+    has_header: bool = False
+    columns: List[str] = field(default_factory=list)
+    confidence: float = 0.0
+
+
+@dataclass
+class DetectionStatistics:
+    """Statistics collected during detection."""
+    estimated_rows: int = 0
+    record_count: int = 0
+    avg_record_length: float = 0.0
+    min_record_length: int = 0
+    max_record_length: int = 0
+    avg_line_width: float = 0.0
+    character_distribution: Dict[str, int] = field(default_factory=dict)
+    delimiter_statistics: Dict[str, Any] = field(default_factory=dict)
+    record_statistics: Dict[str, Any] = field(default_factory=dict)
+    header_confidence: float = 0.0
+    schema_confidence: float = 0.0
+    encoding_confidence: float = 0.0
+
+
+@dataclass
+class CandidateMapping:
+    """A candidate column mapping with confidence."""
+    physical_column: str
+    confidence: float = 0.0
+
+
+@dataclass
+class QuantityRecommendation:
+    """Quantity intelligence recommendation."""
+    recommended_column: Optional[str] = None
+    recommendation_type: str = ""  # "weighted_qty", "units", "none"
+    reason: str = ""
+    confidence: float = 0.0
 
 
 @dataclass
@@ -167,21 +240,76 @@ class DiscoveryResult:
     """
     file_path: str
     file_type: FileType
+
+    # Delimiter
     delimiter: Optional[str] = None
+    delimiter_confidence: float = 0.0
+
+    # Encoding
     encoding: str = "utf-8"
+    encoding_type: EncodingType = EncodingType.UTF_8
+    encoding_confidence: float = 0.0
+
+    # Header
     has_header: bool = False
+    header_confidence: float = 0.0
+    header_start_line: int = 0
+    data_start_line: int = 0
+    trailer_start_line: Optional[int] = None
+
+    # Multiline
     is_multiline: bool = False
     header_prefix: Optional[str] = None
     trailer_prefix: Optional[str] = None
-    record_types: List[str] = field(default_factory=list)
+    record_types: List[RecordTypeInfo] = field(default_factory=list)
+
+    # Columns
     columns: List[str] = field(default_factory=list)
-    candidate_quantity_columns: List[str] = field(default_factory=list)
-    candidate_price_columns: List[str] = field(default_factory=list)
-    candidate_uom_columns: List[str] = field(default_factory=list)
+
+    # Record Hierarchy
     record_hierarchy: Optional[Dict[str, Any]] = None
+
+    # Layout (fixed-width)
+    layout_fields: List[LayoutField] = field(default_factory=list)
+    layout_confidence: float = 0.0
+
+    # Excel
+    excel_sheets: List[ExcelSheetInfo] = field(default_factory=list)
+    candidate_sheet: Optional[str] = None
+
+    # Candidate Columns (19 roles)
+    candidate_store: List[CandidateMapping] = field(default_factory=list)
+    candidate_upc: List[CandidateMapping] = field(default_factory=list)
+    candidate_description: List[CandidateMapping] = field(default_factory=list)
+    candidate_brand: List[CandidateMapping] = field(default_factory=list)
+    candidate_department: List[CandidateMapping] = field(default_factory=list)
+    candidate_category: List[CandidateMapping] = field(default_factory=list)
+    candidate_units: List[CandidateMapping] = field(default_factory=list)
+    candidate_weighted_qty: List[CandidateMapping] = field(default_factory=list)
+    candidate_price: List[CandidateMapping] = field(default_factory=list)
+    candidate_sales: List[CandidateMapping] = field(default_factory=list)
+    candidate_currency: List[CandidateMapping] = field(default_factory=list)
+    candidate_date: List[CandidateMapping] = field(default_factory=list)
+    candidate_time: List[CandidateMapping] = field(default_factory=list)
+    candidate_promotion: List[CandidateMapping] = field(default_factory=list)
+    candidate_store_type: List[CandidateMapping] = field(default_factory=list)
+    candidate_region: List[CandidateMapping] = field(default_factory=list)
+    candidate_division: List[CandidateMapping] = field(default_factory=list)
+    candidate_uom: List[CandidateMapping] = field(default_factory=list)
+    candidate_record_type: List[CandidateMapping] = field(default_factory=list)
+
+    # Quantity Intelligence
+    quantity_recommendation: Optional[QuantityRecommendation] = None
+
+    # Statistics
+    statistics: Optional[DetectionStatistics] = None
+
+    # Overall
     confidence: float = 0.0
     warnings: List[str] = field(default_factory=list)
     recommendations: List[str] = field(default_factory=list)
+
+    # Previews
     raw_preview: Optional[pl.DataFrame] = None
     flatten_preview: Optional[pl.DataFrame] = None
     canonical_preview: Optional[pl.DataFrame] = None

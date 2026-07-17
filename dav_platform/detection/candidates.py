@@ -1,61 +1,73 @@
-"""Candidate column detection for canonical mapping."""
+"""Candidate column detection for canonical mapping.
 
-from typing import Dict, List, Optional
+Supports 19 business roles with confidence scores.
+"""
+
+from typing import Dict, List
+
+from dav_platform.core.contracts import CandidateMapping
 
 
-def detect_candidate_columns(columns: List[str]) -> Dict[str, Optional[str]]:
-    """Heuristically propose canonical column mappings from physical column names.
+# Keyword groups for each canonical role
+ROLE_KEYWORDS: Dict[str, List[str]] = {
+    "store": ["store", "store_nbr", "location", "site", "branch", "store_id", "loc"],
+    "upc": ["upc", "sku", "item", "product_code", "plu", "barcode", "item_nbr", "prod"],
+    "description": ["desc", "name", "product", "item_desc", "title", "label", "prod_desc"],
+    "brand": ["brand", "brand_name", "mfr", "manufacturer"],
+    "department": ["dept", "department", "dept_nbr", "dept_id"],
+    "category": ["category", "cat", "cat_nbr", "class", "subcat"],
+    "units": ["unit", "qty", "quantity", "count", "sold", "volume", "units_sold"],
+    "weighted_qty": ["weight", "lb", "kg", "pound", "weighted", "wtd_qty", "weight_qty"],
+    "price": ["price", "amount", "total", "sales", "dollar", "revenue", "cost", "ext", "unit_price"],
+    "sales": ["sales", "revenue", "total_sales", "ext_price", "extended", "net_sales"],
+    "currency": ["currency", "curr", "cur", "currency_code"],
+    "date": ["date", "dt", "trans_date", "sale_date", "txn_date", "effect_date"],
+    "time": ["time", "tm", "trans_time", "sale_time", "txn_time"],
+    "promotion": ["promo", "promotion", "deal", "discount", "offer"],
+    "store_type": ["store_type", "type", "format", "store_format", "store_class"],
+    "region": ["region", "area", "district", "territory", "zone"],
+    "division": ["division", "div", "div_nbr", "business_unit"],
+    "uom": ["uom", "measure", "unit_of_measure", "uom_desc"],
+    "record_type": ["record_type", "rec_type", "type", "prefix", "line_type"],
+}
 
-    Returns a dict mapping canonical roles to candidate physical column names:
-    store, upc, description, units, price, weight_qty, weight_uom, units_uom.
+
+def detect_candidate_columns(columns: List[str]) -> Dict[str, List[CandidateMapping]]:
+    """Detect candidate column mappings for all 19 business roles.
+
+    Returns:
+        Dict mapping role name to list of CandidateMapping (sorted by confidence).
     """
-    candidates: Dict[str, Optional[str]] = {
-        "store": None,
-        "upc": None,
-        "description": None,
-        "units": None,
-        "price": None,
-        "weight_qty": None,
-        "weight_uom": None,
-        "units_uom": None,
-    }
+    candidates: Dict[str, List[CandidateMapping]] = {role: [] for role in ROLE_KEYWORDS}
 
     col_lower = {c: c.lower().strip() for c in columns}
 
     for phys_col, name in col_lower.items():
-        # Store
-        if any(kw in name for kw in ["store", "store_nbr", "location", "site", "branch"]):
-            candidates["store"] = candidates["store"] or phys_col
+        for role, keywords in ROLE_KEYWORDS.items():
+            confidence = _compute_keyword_match_confidence(name, keywords)
+            if confidence > 0:
+                candidates[role].append(CandidateMapping(
+                    physical_column=phys_col,
+                    confidence=confidence,
+                ))
 
-        # UPC
-        if any(kw in name for kw in ["upc", "sku", "item", "product_code", "plu", "barcode"]):
-            candidates["upc"] = candidates["upc"] or phys_col
-
-        # Description
-        if any(kw in name for kw in ["desc", "name", "product", "item_desc", "title", "label"]):
-            candidates["description"] = candidates["description"] or phys_col
-
-        # Units (quantity count)
-        if any(kw in name for kw in ["unit", "qty", "quantity", "count", "sold", "volume"]):
-            if "uom" not in name and "weight" not in name and "lb" not in name and "kg" not in name:
-                candidates["units"] = candidates["units"] or phys_col
-
-        # Price
-        if any(kw in name for kw in ["price", "amount", "total", "sales", "dollar", "revenue", "cost", "ext"]):
-            candidates["price"] = candidates["price"] or phys_col
-
-        # Weight quantity
-        if any(kw in name for kw in ["weight", "lb", "kg", "pound"]):
-            if "uom" not in name:
-                candidates["weight_qty"] = candidates["weight_qty"] or phys_col
-                if candidates["units"] == phys_col:
-                    candidates["units"] = None
-
-        # Weight UOM
-        if any(kw in name for kw in ["uom", "measure", "unit_of_measure"]):
-            if any(w in name for w in ["weight", "lb", "kg"]):
-                candidates["weight_uom"] = candidates["weight_uom"] or phys_col
-            else:
-                candidates["units_uom"] = candidates["units_uom"] or phys_col
+    # Sort each role's candidates by confidence descending
+    for role in candidates:
+        candidates[role].sort(key=lambda c: c.confidence, reverse=True)
 
     return candidates
+
+
+def _compute_keyword_match_confidence(name: str, keywords: List[str]) -> float:
+    """Compute match confidence between a column name and keyword list.
+
+    Returns 0.0 if no match, otherwise 0.3-1.0 based on match quality.
+    """
+    for kw in keywords:
+        if kw == name:
+            return 1.0  # Exact match
+        if kw in name:
+            # Partial match - longer keyword relative to name = higher confidence
+            ratio = len(kw) / max(len(name), 1)
+            return max(0.3, min(0.9, 0.5 + ratio * 0.4))
+    return 0.0

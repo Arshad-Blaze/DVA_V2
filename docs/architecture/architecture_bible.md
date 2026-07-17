@@ -54,19 +54,54 @@ Data Access → Detection → Canonical → Requirement → Operation → Proces
 - `LocalDataSource`
 - `SSHDataSource`
 
-### Sprint 2: Detection Layer (PENDING)
+### Sprint 2/2.5: Detection Layer (COMPLETE)
 
 **Contract:** `DiscoveryResult`
 
 **Responsibilities:**
-- Detect file type (delimited, fixed-width, multiline, Excel)
-- Detect delimiter, encoding, header
-- Detect record types, prefixes
+- Detect file type (delimited, fixed-width, multiline, Excel, mixed record)
+- Detect delimiter, encoding (UTF-8, UTF-16, Latin-1)
+- Detect header rows, data start, trailer start
+- Detect record types dynamically (not hardcoded)
+- Detect trailer prefix
+- Build record hierarchy
+- Generate layout intelligence for fixed-width files
+- Generate candidate column mappings (19 business roles)
 - Generate previews (raw, flatten, canonical)
-- Compute confidence scores
-- Generate warnings and recommendations
+- Compute confidence scores for every decision
+- Collect comprehensive statistics
+- Generate discovery reports
+- Recommend quantity columns (quantity intelligence)
+
+**Data Types:**
+- `DiscoveryResult` — output contract
+- `RecordTypeInfo` — detected record type with statistics
+- `LayoutField` — fixed-width field suggestion
+- `ExcelSheetInfo` — Excel sheet metadata
+- `DetectionStatistics` — file statistics
+- `CandidateMapping` — column mapping with confidence
+- `QuantityRecommendation` — quantity column recommendation
+- `DiscoveryContext` — internal only (never returned)
+
+**Modules:**
+- `engine.py` — DetectionEngine orchestrator
+- `delimiter.py` — delimiter detection
+- `header.py` — header detection
+- `multiline.py` — multiline/record type detection
+- `candidates.py` — 19-role column mapping
+- `confidence.py` — confidence scoring
+- `encoding.py` — encoding detection
+- `layout.py` — fixed-width layout intelligence
+- `statistics.py` — statistics collection
+- `quantity.py` — quantity intelligence
+- `excel.py` — Excel discovery
+- `previews.py` — preview generation
+- `report.py` — discovery report generation
+- `context.py` — internal DiscoveryContext
 
 **Rule:** Detection is the ONLY source of truth. No downstream rediscovery allowed.
+
+**Test Coverage:** 102 tests (Sprint 2 + 2.5)
 
 ### Sprint 3: Canonical Layer (PENDING)
 
