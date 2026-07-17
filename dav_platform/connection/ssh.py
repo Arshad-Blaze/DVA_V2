@@ -1,0 +1,288 @@
+"""SSH/SFTP data source connector."""
+
+import logging
+import os
+import stat as stat_module
+import tempfile
+from typing import List, BinaryIO, Optional
+
+from dav_platform.core.contracts import IDataSource, DataSourceEntry, DataSourceError, DirectorySummary
+
+logger = logging.getLogger(__name__)
+
+try:
+    import paramiko
+except ImportError:
+    paramiko = None
+
+
+class SSHDataSource(IDataSource):
+    """SSH/SFTP filesystem connector.
+
+    Implements IDataSource for reading files from remote servers via SSH.
+    """
+
+    def __init__(
+        self,
+        host: str,
+        port: int = 22,
+        username: str = "",
+        password: Optional[str] = None,
+        key_file: Optional[str] = None,
+        key_passphrase: Optional[str] = None,
+        timeout: int = 15,
+    ):
+        if paramiko is None:
+            raise DataSourceError(
+                "paramiko is required for SSH connections. "
+                "Install it with: pip install paramiko"
+            )
+        self.host = host
+        self.port = port
+        self.username = username
+        self._password = password
+        self.key_file = key_file
+        self.key_passphrase = key_passphrase
+        self.timeout = timeout
+        self._client: Optional[paramiko.SSHClient] = None
+        self._sftp: Optional[paramiko.SFTPClient] = None
+        self._cwd: str = "/"
+        self._server_info: dict = {}
+
+    def connect(self) -> bool:
+        if paramiko is None:
+            raise DataSourceError("paramiko not installed")
+        try:
+            self._client = paramiko.SSHClient()
+            self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self._client.connect(
+                hostname=self.host,
+                port=self.port,
+                username=self.username,
+                password=self._password,
+                key_filename=self.key_file,
+                passphrase=self.key_passphrase,
+                timeout=self.timeout,
+                look_for_keys=False,
+                allow_agent=False,
+            )
+            self._sftp = self._client.open_sftp()
+            self._sftp.chdir("/")
+            self._cwd = "/"
+            self._gather_info()
+            return True
+        except Exception as e:
+            logger.exception("SSH connection failed: %s", e)
+            self.disconnect()
+            raise DataSourceError(f"SSH connection failed: {e}")
+
+    def disconnect(self) -> None:
+        if self._sftp:
+            try:
+                self._sftp.close()
+            except Exception as e:
+                logger.warning("Failed to close SFTP client: %s", e)
+            self._sftp = None
+        if self._client:
+            try:
+                self._client.close()
+            except Exception as e:
+                logger.warning("Failed to close SSH client: %s", e)
+            self._client = None
+
+    @property
+    def is_connected(self) -> bool:
+        if self._client is None:
+            return False
+        try:
+            transport = self._client.get_transport()
+            return transport is not None and transport.is_active()
+        except Exception as e:
+            logger.warning("is_connected check failed: %s", e)
+            return False
+
+    def _gather_info(self) -> None:
+        try:
+            _, stdout, _ = self._client.exec_command(
+                "uname -a; df -h / | tail -1; pwd", timeout=10
+            )
+            output = stdout.read().decode(errors="replace").strip()
+            lines = output.split("\n")
+            info = {"type": "ssh", "host": self.host, "port": self.port}
+            if lines:
+                info["platform"] = lines[0]
+            if len(lines) > 1:
+                info["disk"] = lines[1]
+            self._server_info = info
+        except Exception as e:
+            logger.warning("Failed to gather SSH server info: %s", e)
+            self._server_info = {"type": "ssh", "host": self.host, "port": self.port}
+
+    def _resolve(self, path: str) -> str:
+        if not path:
+            return self._cwd
+        if path.startswith("/"):
+            return path
+        if self._cwd.endswith("/"):
+            return self._cwd + path
+        return self._cwd + "/" + path
+
+    def list_directory(self, path: str) -> List[DataSourceEntry]:
+        rpath = self._resolve(path)
+        try:
+            entries = []
+            for attr in self._sftp.listdir_attr(rpath):
+                is_dir = stat_module.S_ISDIR(attr.st_mode)
+                entries.append(DataSourceEntry(
+                    name=attr.filename,
+                    path=rpath.rstrip("/") + "/" + attr.filename,
+                    is_dir=is_dir,
+                    size=attr.st_size if not is_dir else None,
+                    modified=str(attr.st_mtime) if attr.st_mtime else None,
+                ))
+            return sorted(entries, key=lambda e: (not e.is_dir, e.name.lower()))
+        except Exception as e:
+            logger.exception("Failed to list directory %s", rpath)
+            raise DataSourceError(f"Cannot list directory {rpath}: {e}")
+
+    def list_files(self, path: str) -> List[str]:
+        rpath = self._resolve(path)
+        try:
+            attr = self._sftp.stat(rpath)
+            if stat_module.S_ISREG(attr.st_mode):
+                return [rpath]
+            files = []
+            for entry in self._sftp.listdir_attr(rpath):
+                if stat_module.S_ISREG(entry.st_mode):
+                    files.append(rpath.rstrip("/") + "/" + entry.filename)
+            return sorted(files)
+        except Exception as e:
+            logger.exception("Failed to list files at %s", rpath)
+            raise DataSourceError(f"Cannot list files at {rpath}: {e}")
+
+    def read_sample(self, path: str, n: int = 100) -> str:
+        rpath = self._resolve(path)
+        try:
+            with self._sftp.open(rpath, "rb") as f:
+                lines = []
+                for _ in range(n):
+                    try:
+                        lines.append(next(f).decode("utf-8", errors="replace"))
+                    except StopIteration:
+                        break
+                return "".join(lines)
+        except Exception as e:
+            logger.exception("Failed to read sample from %s", rpath)
+            raise DataSourceError(f"Cannot read sample from {rpath}: {e}")
+
+    def open_stream(self, path: str) -> BinaryIO:
+        rpath = self._resolve(path)
+        try:
+            return self._sftp.open(rpath, "rb")
+        except Exception as e:
+            logger.exception("Failed to open stream for %s", rpath)
+            raise DataSourceError(f"Cannot open stream for {rpath}: {e}")
+
+    def download_if_required(self, path: str) -> str:
+        rpath = self._resolve(path)
+        tmp = None
+        try:
+            tmp = tempfile.NamedTemporaryFile(
+                delete=False, suffix="_" + os.path.basename(rpath)
+            )
+            tmp.close()
+            self._sftp.get(rpath, tmp.name)
+            logger.info("Downloaded %s to local temp %s", rpath, tmp.name)
+            return tmp.name
+        except Exception as e:
+            if tmp is not None:
+                tmp.close()
+                try:
+                    os.unlink(tmp.name)
+                except Exception as cleanup_e:
+                    logger.warning("Failed to clean up temp file %s: %s", tmp.name, cleanup_e)
+            logger.exception("Failed to download %s", rpath)
+            raise DataSourceError(f"Cannot download {rpath}: {e}")
+
+    def exists(self, path: str) -> bool:
+        rpath = self._resolve(path)
+        try:
+            self._sftp.stat(rpath)
+            return True
+        except Exception as e:
+            logger.warning("exists check failed for %s: %s", rpath, e)
+            return False
+
+    def stat(self, path: str) -> dict:
+        rpath = self._resolve(path)
+        try:
+            attr = self._sftp.stat(rpath)
+            return {
+                "size": attr.st_size,
+                "modified": attr.st_mtime,
+                "is_dir": stat_module.S_ISDIR(attr.st_mode),
+                "is_file": stat_module.S_ISREG(attr.st_mode),
+            }
+        except Exception as e:
+            logger.exception("Failed to stat %s", rpath)
+            raise DataSourceError(f"Cannot stat {rpath}: {e}")
+
+    def get_file_size(self, path: str) -> int:
+        rpath = self._resolve(path)
+        try:
+            attr = self._sftp.stat(rpath)
+            if stat_module.S_ISREG(attr.st_mode):
+                return attr.st_size
+            return 0
+        except Exception:
+            return 0
+
+    def directory_summary(self, path: str) -> DirectorySummary:
+        rpath = self._resolve(path)
+        summary = DirectorySummary()
+        extensions: dict = {}
+
+        try:
+            attrs = self._sftp.listdir_attr(rpath)
+            for attr in attrs:
+                if stat_module.S_ISREG(attr.st_mode):
+                    size = attr.st_size or 0
+                    summary.total_files += 1
+                    summary.total_size += size
+
+                    ext = os.path.splitext(attr.filename)[1].lower()
+                    extensions[ext] = extensions.get(ext, 0) + 1
+
+                    if summary.largest_file is None or size > summary.largest_file_size:
+                        summary.largest_file = attr.filename
+                        summary.largest_file_size = size
+
+                    if summary.smallest_file is None or size < summary.smallest_file_size:
+                        summary.smallest_file = attr.filename
+                        summary.smallest_file_size = size
+        except Exception as e:
+            logger.exception("Failed to summarize directory %s", rpath)
+            raise DataSourceError(f"Cannot summarize directory {rpath}: {e}")
+
+        if summary.total_files > 0:
+            summary.average_file_size = summary.total_size / summary.total_files
+        summary.file_extensions = extensions
+        summary.estimated_transfer_bytes = summary.total_size
+        return summary
+
+    def get_server_info(self) -> dict:
+        return dict(self._server_info)
+
+    def get_connection_string(self) -> str:
+        return f"{self.username}@{self.host}:{self.port}"
+
+    def navigate(self, path: str) -> str:
+        rpath = self._resolve(path)
+        attr = self._sftp.stat(rpath)
+        if not stat_module.S_ISDIR(attr.st_mode):
+            raise DataSourceError(f"Not a directory: {rpath}")
+        self._cwd = rpath
+        return self._cwd
+
+    def getcwd(self) -> str:
+        return self._cwd
