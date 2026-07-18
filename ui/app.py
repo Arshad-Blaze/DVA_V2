@@ -24,6 +24,7 @@ from ui.workspaces.operation.workspace import render as render_operation
 from ui.workspaces.processing.workspace import render as render_processing
 from ui.workspaces.validation.workspace import render as render_validation
 from ui.workspaces.reports.workspace import render as render_reports
+from ui.workspaces.administration.workspace import render as render_administration
 from ui.workspaces.settings.workspace import render as render_settings
 from ui.workspaces.help.workspace import render as render_help
 
@@ -76,6 +77,7 @@ def main():
     ws_ctrl.register("processing", render_processing)
     ws_ctrl.register("validation", render_validation)
     ws_ctrl.register("reports", render_reports)
+    ws_ctrl.register("administration", render_administration)
     ws_ctrl.register("settings", render_settings)
     ws_ctrl.register("help", render_help)
 

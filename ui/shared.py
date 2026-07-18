@@ -33,6 +33,12 @@ from ui.services.operation_service import OperationService
 from ui.controllers.operation_controller import OperationController
 from ui.services.processing_service import ProcessingService
 from ui.controllers.processing_controller import ProcessingController
+from ui.services.validation_service import ValidationService
+from ui.controllers.validation_controller import ValidationController
+from ui.services.reports_service import ReportsService
+from ui.controllers.reports_controller import ReportsController
+from ui.services.admin_service import AdminService
+from ui.controllers.admin_controller import AdminController
 
 
 # --- Lazy-initialized singletons ---
@@ -65,6 +71,7 @@ _preview_svc: Optional[PreviewService] = None
 _req_svc: Optional[RequirementService] = None
 _op_svc: Optional[OperationService] = None
 _proc_svc: Optional[ProcessingService] = None
+_val_svc: Optional[ValidationService] = None
 
 _session_ctrl: Optional[SessionController] = None
 _nav_ctrl: Optional[NavigationController] = None
@@ -77,6 +84,11 @@ _preview_ctrl: Optional[PreviewController] = None
 _req_ctrl: Optional[RequirementController] = None
 _op_ctrl: Optional[OperationController] = None
 _proc_ctrl: Optional[ProcessingController] = None
+_val_ctrl: Optional[ValidationController] = None
+_rep_svc: Optional[ReportsService] = None
+_rep_ctrl: Optional[ReportsController] = None
+_adm_svc: Optional[AdminService] = None
+_adm_ctrl: Optional[AdminController] = None
 
 
 def init_all(with_persistence: bool = True) -> None:
@@ -90,6 +102,9 @@ def init_all(with_persistence: bool = True) -> None:
     global _req_svc, _req_ctrl
     global _op_svc, _op_ctrl
     global _proc_svc, _proc_ctrl
+    global _val_svc, _val_ctrl
+    global _rep_svc, _rep_ctrl
+    global _adm_svc, _adm_ctrl
 
     _context = WorkspaceContext()
     _storage = StorageService()
@@ -125,6 +140,12 @@ def init_all(with_persistence: bool = True) -> None:
     _op_ctrl = OperationController(_op_svc, _notify_svc)
     _proc_svc = ProcessingService(_op_svc)
     _proc_ctrl = ProcessingController(_proc_svc, _notify_svc)
+    _val_svc = ValidationService(_context)
+    _val_ctrl = ValidationController(_val_svc, _notify_svc)
+    _rep_svc = ReportsService(_context)
+    _rep_ctrl = ReportsController(_rep_svc, _notify_svc)
+    _adm_svc = AdminService(_context)
+    _adm_ctrl = AdminController(_adm_svc, _notify_svc)
 
     # Update session service theme from the context
     is_dark = _context.theme == "dark" if _context else False
@@ -235,3 +256,30 @@ def proc_svc() -> ProcessingService:
 def proc_ctrl() -> ProcessingController:
     assert _proc_ctrl is not None
     return _proc_ctrl
+
+def val_svc() -> ValidationService:
+    assert _val_svc is not None
+    return _val_svc
+
+def val_ctrl() -> ValidationController:
+    assert _val_ctrl is not None
+    return _val_ctrl
+
+def rep_svc() -> ReportsService:
+    assert _rep_svc is not None
+    return _rep_svc
+
+def reports_ctrl() -> ReportsController:
+    assert _rep_ctrl is not None
+    return _rep_ctrl
+
+def rep_ctrl() -> ReportsController:
+    return reports_ctrl()
+
+def admin_svc() -> AdminService:
+    assert _adm_svc is not None
+    return _adm_svc
+
+def admin_ctrl() -> AdminController:
+    assert _adm_ctrl is not None
+    return _adm_ctrl

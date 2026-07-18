@@ -7,6 +7,7 @@ from ui.controllers.navigation_controller import NavigationController
 FUNCTIONAL_WORKSPACES = {
     "home", "projects", "connection", "detection", "canonical",
     "preview", "requirement", "operation", "processing",
+    "validation", "reports", "administration",
 }
 
 
@@ -29,6 +30,7 @@ NAV_ITEMS = [
         ("reports", "Reports", "assessment"),
     ]),
     ("System", [
+        ("administration", "Administration", "admin_panel_settings"),
         ("downloads", "Downloads", "download"),
         ("history", "History", "history"),
         ("settings", "Settings", "settings"),
