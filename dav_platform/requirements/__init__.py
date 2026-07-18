@@ -10,7 +10,7 @@ from dav_platform.requirements.mode_selector import (
     suggest_mode,
 )
 from dav_platform.requirements.validator import (
-    ValidationResult,
+    ModeValidationResult,
     check_data_readiness,
     validate_mode,
 )
@@ -29,7 +29,7 @@ __all__ = [
     "get_available_modes",
     "select_mode",
     "suggest_mode",
-    "ValidationResult",
+    "ModeValidationResult",
     "check_data_readiness",
     "validate_mode",
     "build_context",

@@ -13,8 +13,8 @@ from dav_platform.core.contracts import CanonicalDataset, ColumnMapping
 
 
 @dataclass
-class ValidationResult:
-    """Structured validation result."""
+class CanonicalValidationResult:
+    """Structured validation result for canonical data."""
     passed: bool = True
     issues: List[str] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
@@ -22,7 +22,7 @@ class ValidationResult:
     total_rows: int = 0
 
 
-def validate_canonical(dataset: CanonicalDataset) -> ValidationResult:
+def validate_canonical(dataset: CanonicalDataset) -> CanonicalValidationResult:
     """Validate a CanonicalDataset before it leaves the layer.
 
     Checks:
@@ -32,7 +32,7 @@ def validate_canonical(dataset: CanonicalDataset) -> ValidationResult:
     - Datatype issues
     - Empty dataset
     """
-    result = ValidationResult()
+    result = CanonicalValidationResult()
 
     # Check for empty dataset
     if dataset.dataframe is None or dataset.dataframe.is_empty():
@@ -78,9 +78,9 @@ def validate_canonical(dataset: CanonicalDataset) -> ValidationResult:
 def validate_mapping_completeness(
     mappings: List[ColumnMapping],
     total_physical_columns: int,
-) -> ValidationResult:
+) -> CanonicalValidationResult:
     """Validate mapping completeness."""
-    result = ValidationResult()
+    result = CanonicalValidationResult()
 
     if not mappings:
         result.issues.append("No column mappings found")

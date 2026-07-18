@@ -10,7 +10,7 @@ from dav_platform.core.contracts import (
     ProcessingMode,
 )
 from dav_platform.requirements.validator import (
-    ValidationResult,
+    ModeValidationResult,
     check_data_readiness,
     validate_mode,
 )

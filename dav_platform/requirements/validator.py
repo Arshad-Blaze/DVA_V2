@@ -11,7 +11,7 @@ from dav_platform.requirements.mode_selector import GROUPABLE_COLUMNS
 
 
 @dataclass
-class ValidationResult:
+class ModeValidationResult:
     """Result of mode validation."""
     passed: bool = True
     issues: List[str] = field(default_factory=list)
@@ -21,7 +21,7 @@ class ValidationResult:
 def validate_mode(
     mode: ProcessingMode,
     dataset: Optional[CanonicalDataset],
-) -> ValidationResult:
+) -> ModeValidationResult:
     """Validate that the selected mode is compatible with the dataset.
 
     Args:
@@ -29,9 +29,9 @@ def validate_mode(
         dataset: CanonicalDataset from Canonical Layer
 
     Returns:
-        ValidationResult with pass/fail and any issues
+        ModeValidationResult with pass/fail and any issues
     """
-    result = ValidationResult()
+    result = ModeValidationResult()
 
     if dataset is None:
         result.passed = False
@@ -87,7 +87,7 @@ def check_data_readiness(dataset: Optional[CanonicalDataset]) -> List[str]:
 
 def _validate_raw_review(
     dataset: CanonicalDataset,
-    result: ValidationResult,
+    result: ModeValidationResult,
     has_data: bool,
 ) -> None:
     """Validate RAW_REVIEW mode."""
@@ -98,7 +98,7 @@ def _validate_raw_review(
 
 def _validate_aggregate_only(
     dataset: CanonicalDataset,
-    result: ValidationResult,
+    result: ModeValidationResult,
     has_data: bool,
 ) -> None:
     """Validate AGGREGATE_ONLY mode."""
@@ -118,7 +118,7 @@ def _validate_aggregate_only(
 
 def _validate_aggregate_and_calculate(
     dataset: CanonicalDataset,
-    result: ValidationResult,
+    result: ModeValidationResult,
     has_data: bool,
 ) -> None:
     """Validate AGGREGATE_AND_CALCULATE mode."""
