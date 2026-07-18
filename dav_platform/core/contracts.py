@@ -585,9 +585,10 @@ class ProcessingResult:
 # ============================================================================
 
 class ValidationSeverity(Enum):
-    ERROR = "error"
-    WARNING = "warning"
     INFO = "info"
+    WARNING = "warning"
+    ERROR = "error"
+    CRITICAL = "critical"
 
 
 @dataclass
@@ -608,6 +609,74 @@ class ValidationResult:
     total_rows_checked: int = 0
     error_count: int = 0
     warning_count: int = 0
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class ValidationRule:
+    """Definition of a single validation rule."""
+    name: str
+    rule_type: str = ""  # completeness, consistency, uniqueness, range, nulls, custom
+    description: str = ""
+    columns: List[str] = field(default_factory=list)
+    severity: ValidationSeverity = ValidationSeverity.ERROR
+    enabled: bool = True
+    parameters: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class ValidationConfig:
+    """Configuration for the Validation layer."""
+    rules: List[ValidationRule] = field(default_factory=list)
+    check_completeness: bool = True
+    check_consistency: bool = True
+    check_uniqueness: bool = True
+    check_nulls: bool = True
+    check_ranges: bool = True
+    max_null_percentage: float = 10.0  # warn if >10% nulls
+    required_columns: List[str] = field(default_factory=list)
+    column_ranges: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class ValidationSummary:
+    """Per-entity validation summary (store-level or UPC-level)."""
+    entity_type: str = ""  # store, upc, category, brand
+    entity_id: str = ""
+    expected: Dict[str, float] = field(default_factory=dict)
+    actual: Dict[str, float] = field(default_factory=dict)
+    differences: Dict[str, float] = field(default_factory=dict)
+    within_tolerance: Dict[str, bool] = field(default_factory=dict)
+    passed: bool = True
+    issues_count: int = 0
+
+
+@dataclass
+class ValidationStatistics:
+    """Aggregate statistics for the full validation run."""
+    total_rules_evaluated: int = 0
+    rules_passed: int = 0
+    rules_failed: int = 0
+    warning_count: int = 0
+    error_count: int = 0
+    critical_count: int = 0
+    validation_coverage: float = 0.0
+    execution_time_seconds: float = 0.0
+    total_entities_checked: int = 0
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class ValidationReportData:
+    """Structured data for downstream report generation."""
+    passed: bool = True
+    total_checks: int = 0
+    passed_checks: int = 0
+    failed_checks: int = 0
+    summaries: List[ValidationSummary] = field(default_factory=list)
+    issues: List[ValidationIssue] = field(default_factory=list)
+    statistics: Optional["ValidationStatistics"] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 

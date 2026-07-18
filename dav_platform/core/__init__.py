@@ -41,11 +41,17 @@ from dav_platform.core.contracts import (
     CalculationResult,
     ProcessingStatistics,
     ProcessingConfig,
+    # Validation Layer
+    ValidationSeverity,
+    ValidationIssue,
+    ValidationResult,
+    ValidationRule,
+    ValidationConfig,
+    ValidationSummary,
+    ValidationStatistics,
+    ValidationReportData,
     # Shared / cross-layer
     ProcessingResult,
-    ValidationResult,
-    ValidationIssue,
-    ValidationSeverity,
     ReportFormat,
     ReportOutput,
 )
@@ -91,11 +97,17 @@ __all__ = [
     "CalculationResult",
     "ProcessingStatistics",
     "ProcessingConfig",
+    # Validation Layer
+    "ValidationSeverity",
+    "ValidationIssue",
+    "ValidationResult",
+    "ValidationRule",
+    "ValidationConfig",
+    "ValidationSummary",
+    "ValidationStatistics",
+    "ValidationReportData",
     # Shared / cross-layer
     "ProcessingResult",
-    "ValidationResult",
-    "ValidationIssue",
-    "ValidationSeverity",
     "ReportFormat",
     "ReportOutput",
 ]

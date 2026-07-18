@@ -10,6 +10,9 @@ FROZEN_LAYERS = [
     ROOT / "detection",
     ROOT / "canonical",
     ROOT / "requirements",
+    ROOT / "operations",
+    ROOT / "processing",
+    ROOT / "validation",
 ]
 
 ALL_LAYERS = {
@@ -18,6 +21,8 @@ ALL_LAYERS = {
     "canonical": ROOT / "canonical",
     "detection": ROOT / "detection",
     "connection": ROOT / "connection",
+    "processing": ROOT / "processing",
+    "validation": ROOT / "validation",
     "core": ROOT / "core",
 }
 
@@ -27,12 +32,16 @@ IMPORT_RULES: dict[str, list[str]] = {
     "canonical": ["core", "canonical"],
     "detection": ["core", "detection"],
     "connection": ["core", "connection"],
+    "processing": ["core", "processing"],
+    "validation": ["core", "validation"],
 }
 
 BYPASS_RULES: dict[str, list[str]] = {
     "operations": ["detection", "connection"],
     "requirements": ["operations"],
     "canonical": ["operations", "requirements"],
+    "processing": ["operations", "requirements", "canonical", "detection", "connection"],
+    "validation": ["operations", "requirements", "canonical", "detection", "connection", "processing"],
 }
 
 OPERATIONS_KEYWORDS = [
@@ -253,7 +262,7 @@ class TestNoRetailerSpecificLogic:
     @pytest.mark.architecture
     @pytest.mark.regression
     @pytest.mark.parametrize(
-        "layer_key", ["operations", "requirements"]
+        "layer_key", ["operations", "requirements", "processing", "validation"]
     )
     def test_no_retailer_names(self, layer_key: str):
         layer_dir = ALL_LAYERS[layer_key]
@@ -292,6 +301,8 @@ class TestSRPIntact:
         "canonical": ["engine.py"],
         "detection": ["engine.py"],
         "connection": ["manager.py"],
+        "processing": ["engine.py"],
+        "validation": ["engine.py"],
     }
 
     @pytest.mark.architecture
