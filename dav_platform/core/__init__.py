@@ -33,6 +33,14 @@ from dav_platform.core.contracts import (
     OperationLog,
     ExecutionMetadata,
     ExecutionResult,
+    # Processing Layer
+    AggregationStrategy,
+    AggregationConfig,
+    AggregationResult,
+    CalculationConfig,
+    CalculationResult,
+    ProcessingStatistics,
+    ProcessingConfig,
     # Shared / cross-layer
     ProcessingResult,
     ValidationResult,
@@ -75,6 +83,14 @@ __all__ = [
     "OperationLog",
     "ExecutionMetadata",
     "ExecutionResult",
+    # Processing Layer
+    "AggregationStrategy",
+    "AggregationConfig",
+    "AggregationResult",
+    "CalculationConfig",
+    "CalculationResult",
+    "ProcessingStatistics",
+    "ProcessingConfig",
     # Shared / cross-layer
     "ProcessingResult",
     "ValidationResult",

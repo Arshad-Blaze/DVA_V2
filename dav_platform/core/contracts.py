@@ -612,6 +612,90 @@ class ValidationResult:
 
 
 # ============================================================================
+# Processing Layer Contracts
+# ============================================================================
+
+class AggregationStrategy(Enum):
+    """Aggregation strategy for grouping."""
+    SUM = "sum"
+    MEAN = "mean"
+    COUNT = "count"
+    MIN = "min"
+    MAX = "max"
+    FIRST = "first"
+    LAST = "last"
+
+
+@dataclass
+class AggregationConfig:
+    """Configuration for a single aggregation."""
+    column: str
+    strategy: AggregationStrategy = AggregationStrategy.SUM
+    alias: Optional[str] = None
+
+
+@dataclass
+class AggregationResult:
+    """Result of an aggregation operation."""
+    data: pl.DataFrame = field(default_factory=lambda: pl.DataFrame())
+    group_columns: List[str] = field(default_factory=list)
+    aggregations: List[AggregationConfig] = field(default_factory=list)
+    row_count: int = 0
+    elapsed_seconds: float = 0.0
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class CalculationConfig:
+    """Configuration for a single calculation."""
+    name: str
+    expression: str = ""
+    columns: List[str] = field(default_factory=list)
+    operation: str = ""  # sum, difference, ratio, avg, min, max, custom
+    alias: Optional[str] = None
+
+
+@dataclass
+class CalculationResult:
+    """Result of a calculation operation."""
+    data: pl.DataFrame = field(default_factory=lambda: pl.DataFrame())
+    calculations: List[CalculationConfig] = field(default_factory=list)
+    row_count: int = 0
+    elapsed_seconds: float = 0.0
+    metadata: Dict[str, Any] = field(default_factory=dict)
+    errors: List[str] = field(default_factory=list)
+
+
+@dataclass
+class ProcessingStatistics:
+    """Statistics generated during processing."""
+    total_rows: int = 0
+    unique_stores: int = 0
+    unique_upcs: int = 0
+    unique_categories: int = 0
+    unique_brands: int = 0
+    unique_departments: int = 0
+    duplicate_count: int = 0
+    null_counts: Dict[str, int] = field(default_factory=dict)
+    distribution: Dict[str, Any] = field(default_factory=dict)
+    column_stats: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    elapsed_seconds: float = 0.0
+
+
+@dataclass
+class ProcessingConfig:
+    """Configuration for the Processing Layer."""
+    group_columns: List[str] = field(default_factory=list)
+    aggregation_configs: List[AggregationConfig] = field(default_factory=list)
+    calculation_configs: List[CalculationConfig] = field(default_factory=list)
+    chunk_size: int = 10_000
+    streaming: bool = True
+    compute_statistics: bool = True
+    parallel: bool = False  # design only, no premature optimization
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+# ============================================================================
 # Reporting Layer Contract
 # ============================================================================
 
