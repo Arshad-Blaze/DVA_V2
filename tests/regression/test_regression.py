@@ -62,11 +62,11 @@ class TestCoreExportsComplete:
     def test_core_exports_shared_types(self):
         from dav_platform.core import (
             ProcessingResult, ValidationResult, ValidationIssue,
-            ValidationSeverity, ReportFormat, ReportOutput,
+            ValidationSeverity, OutputFormat, OutputArtifacts, OutputConfig,
         )
         assert all(t is not None for t in [
             ProcessingResult, ValidationResult, ValidationIssue,
-            ValidationSeverity, ReportFormat, ReportOutput,
+            ValidationSeverity, OutputFormat, OutputArtifacts, OutputConfig,
         ])
 
 

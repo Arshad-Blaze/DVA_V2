@@ -50,10 +50,14 @@ from dav_platform.core.contracts import (
     ValidationSummary,
     ValidationStatistics,
     ValidationReportData,
+    # Output Layer
+    OutputFormat,
+    ExportManifest,
+    OutputStatistics,
+    OutputArtifacts,
+    OutputConfig,
     # Shared / cross-layer
     ProcessingResult,
-    ReportFormat,
-    ReportOutput,
 )
 
 __all__ = [
@@ -106,8 +110,12 @@ __all__ = [
     "ValidationSummary",
     "ValidationStatistics",
     "ValidationReportData",
+    # Output Layer
+    "OutputFormat",
+    "ExportManifest",
+    "OutputStatistics",
+    "OutputArtifacts",
+    "OutputConfig",
     # Shared / cross-layer
     "ProcessingResult",
-    "ReportFormat",
-    "ReportOutput",
 ]

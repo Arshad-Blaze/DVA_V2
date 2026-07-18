@@ -765,20 +765,69 @@ class ProcessingConfig:
 
 
 # ============================================================================
-# Reporting Layer Contract
+# Output Layer Contracts
 # ============================================================================
 
-class ReportFormat(Enum):
+
+class OutputFormat(Enum):
     EXCEL = "excel"
     CSV = "csv"
-    PARQUET = "parquet"
+    JSON = "json"
 
 
 @dataclass
-class ReportOutput:
-    """Output of the Reporting layer."""
-    file_path: str
-    format: ReportFormat
-    sheet_name: Optional[str] = None
-    row_count: int = 0
+class ExportManifest:
+    """Manifest of all exported files."""
+    files: List[Dict[str, Any]] = field(default_factory=list)
+    total_files: int = 0
+    total_size_bytes: int = 0
+    export_duration_seconds: float = 0.0
+    export_timestamp: str = ""
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class OutputStatistics:
+    """Statistics about the output generation."""
+    total_files_generated: int = 0
+    total_sheets_created: int = 0
+    total_rows_exported: int = 0
+    total_size_bytes: int = 0
+    generation_time_seconds: float = 0.0
+    success_rate: float = 100.0
+    warnings: List[str] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class OutputArtifacts:
+    """Collection of all generated output files."""
+    excel_files: List[str] = field(default_factory=list)
+    csv_files: List[str] = field(default_factory=list)
+    json_files: List[str] = field(default_factory=list)
+    manifest: Optional[ExportManifest] = None
+    statistics: Optional[OutputStatistics] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class OutputConfig:
+    """Configuration for the Output Layer."""
+    output_dir: str = "./output"
+    excel_enabled: bool = True
+    csv_enabled: bool = True
+    json_enabled: bool = True
+    include_validation_summary: bool = True
+    include_store_summary: bool = True
+    include_upc_summary: bool = True
+    include_category_summary: bool = True
+    include_brand_summary: bool = True
+    include_department_summary: bool = True
+    include_business_kpis: bool = True
+    include_processing_summary: bool = True
+    include_execution_summary: bool = True
+    include_metadata_sheet: bool = True
+    include_dashboard: bool = True
+    max_top_stores: int = 5
+    max_bottom_stores: int = 5
     metadata: Dict[str, Any] = field(default_factory=dict)
