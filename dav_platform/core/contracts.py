@@ -405,6 +405,51 @@ class ProcessingMode(Enum):
     RAW_REVIEW = "raw_review"
 
 
+class BusinessGoal(Enum):
+    """Business objectives the user may want to accomplish."""
+    RAW_REVIEW = "raw_review"
+    VALIDATION = "validation"
+    FORMAT_CHANGE = "format_change"
+    MIGRATION = "migration"
+    COMPARISON = "comparison"
+    REPORTING = "reporting"
+    AGGREGATION = "aggregation"
+    CALCULATION = "calculation"
+
+
+@dataclass
+class CapabilityMatrix:
+    """Determines what operations the dataset supports."""
+    can_aggregate: bool = False
+    can_calculate: bool = False
+    can_compare: bool = False
+    can_validate: bool = False
+    can_migrate: bool = False
+    can_report: bool = False
+    can_review: bool = False
+
+    def to_dict(self) -> Dict[str, bool]:
+        return {
+            "can_aggregate": self.can_aggregate,
+            "can_calculate": self.can_calculate,
+            "can_compare": self.can_compare,
+            "can_validate": self.can_validate,
+            "can_migrate": self.can_migrate,
+            "can_report": self.can_report,
+            "can_review": self.can_review,
+        }
+
+
+@dataclass
+class ExecutionStep:
+    """A single step in an execution plan."""
+    step_number: int
+    action: str
+    description: str
+    required: bool = True
+    layer: str = ""  # which layer executes this step
+
+
 @dataclass
 class OperationContext:
     """Context passed through operation and processing layers."""
@@ -412,6 +457,16 @@ class OperationContext:
     options: Dict[str, Any] = field(default_factory=dict)
     session_id: str = ""
     metadata: Dict[str, Any] = field(default_factory=dict)
+    # Sprint 4B fields
+    business_goal: Optional[BusinessGoal] = None
+    capability_matrix: Optional[CapabilityMatrix] = None
+    execution_plan: List[ExecutionStep] = field(default_factory=list)
+    recommended_workflow: str = ""
+    required_inputs: List[str] = field(default_factory=list)
+    missing_inputs: List[str] = field(default_factory=list)
+    expected_outputs: List[str] = field(default_factory=list)
+    warnings: List[str] = field(default_factory=list)
+    confidence: float = 0.0
 
 
 # ============================================================================
