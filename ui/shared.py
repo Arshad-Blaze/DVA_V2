@@ -29,6 +29,10 @@ from ui.services.preview_service import PreviewService
 from ui.controllers.preview_controller import PreviewController
 from ui.services.requirement_service import RequirementService
 from ui.controllers.requirement_controller import RequirementController
+from ui.services.operation_service import OperationService
+from ui.controllers.operation_controller import OperationController
+from ui.services.processing_service import ProcessingService
+from ui.controllers.processing_controller import ProcessingController
 
 
 # --- Lazy-initialized singletons ---
@@ -59,6 +63,8 @@ _detection_svc: Optional[DetectionService] = None
 _canonical_svc: Optional[CanonicalService] = None
 _preview_svc: Optional[PreviewService] = None
 _req_svc: Optional[RequirementService] = None
+_op_svc: Optional[OperationService] = None
+_proc_svc: Optional[ProcessingService] = None
 
 _session_ctrl: Optional[SessionController] = None
 _nav_ctrl: Optional[NavigationController] = None
@@ -69,6 +75,8 @@ _detection_ctrl: Optional[DetectionController] = None
 _canonical_ctrl: Optional[CanonicalController] = None
 _preview_ctrl: Optional[PreviewController] = None
 _req_ctrl: Optional[RequirementController] = None
+_op_ctrl: Optional[OperationController] = None
+_proc_ctrl: Optional[ProcessingController] = None
 
 
 def init_all(with_persistence: bool = True) -> None:
@@ -80,6 +88,8 @@ def init_all(with_persistence: bool = True) -> None:
     global _canonical_svc, _canonical_ctrl
     global _preview_svc, _preview_ctrl
     global _req_svc, _req_ctrl
+    global _op_svc, _op_ctrl
+    global _proc_svc, _proc_ctrl
 
     _context = WorkspaceContext()
     _storage = StorageService()
@@ -111,6 +121,10 @@ def init_all(with_persistence: bool = True) -> None:
     _preview_ctrl = PreviewController(_preview_svc, _notify_svc)
     _req_svc = RequirementService(_context)
     _req_ctrl = RequirementController(_req_svc, _notify_svc)
+    _op_svc = OperationService(_req_svc)
+    _op_ctrl = OperationController(_op_svc, _notify_svc)
+    _proc_svc = ProcessingService(_op_svc)
+    _proc_ctrl = ProcessingController(_proc_svc, _notify_svc)
 
     # Update session service theme from the context
     is_dark = _context.theme == "dark" if _context else False
@@ -205,3 +219,19 @@ def req_svc() -> RequirementService:
 def req_ctrl() -> RequirementController:
     assert _req_ctrl is not None
     return _req_ctrl
+
+def op_svc() -> OperationService:
+    assert _op_svc is not None
+    return _op_svc
+
+def op_ctrl() -> OperationController:
+    assert _op_ctrl is not None
+    return _op_ctrl
+
+def proc_svc() -> ProcessingService:
+    assert _proc_svc is not None
+    return _proc_svc
+
+def proc_ctrl() -> ProcessingController:
+    assert _proc_ctrl is not None
+    return _proc_ctrl
