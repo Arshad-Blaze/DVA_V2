@@ -2,582 +2,597 @@ You are continuing the DVA Platform v2 rebuild.
 
 IMPORTANT
 
-This is UI Sprint 1 — Application Shell & Workspace Framework.
+This is UI Sprint 4B — Business Preview Studio & Canonical Validation.
 
-The backend architecture is COMPLETE and FROZEN.
+UI Sprint 4A (Canonical Mapping Studio) is COMPLETE and FROZEN.
 
-DO NOT modify backend code except for confirmed bug fixes discovered during regression testing.
+Backend Canonical Layer is COMPLETE and FROZEN.
 
-The UI is a completely separate architecture.
+DO NOT modify backend code.
 
-The UI must consume backend public contracts only.
-
-It must NEVER contain business logic.
+This workspace consumes Canonical Layer public contracts only.
 
 ==========================================================
 OBJECTIVE
 ==========================================================
 
-Build the UI Foundation for the DVA Platform.
+Build the Business Preview Studio.
 
-This sprint does NOT implement Connection, Detection, Processing or Reports.
+This is NOT another mapping screen.
 
-Instead, it builds the application shell that every future workspace will use.
+This is the user's final confidence checkpoint before Processing.
 
-Think of this as building Visual Studio Code before building its editors.
+The purpose is to answer:
 
-==========================================================
-DESIGN PHILOSOPHY
-==========================================================
+"Is this retailer data correctly transformed into the DVA Business Model?"
 
-Target inspiration:
-
-Visual Studio Code
-
-Databricks
-
-Power BI Desktop
-
-Azure Data Factory
-
-NOT a typical Streamlit demo.
-
-The application should feel like a professional enterprise desktop application.
-
-Clean.
-
-Minimal.
-
-Modern.
-
-Fast.
-
-Workspace driven.
+The workspace should make the user feel confident before continuing.
 
 ==========================================================
-UI ARCHITECTURE
+USER JOURNEY
 ==========================================================
 
-Create a dedicated UI architecture completely separated from backend layers.
+Mapping Complete
 
-Suggested structure
+↓
 
-ui/
+Business Preview
 
-    app.py
+↓
 
-    shell/
+Review Canonical Dataset
 
-        layout.py
+↓
 
-        navigation.py
+Review Validation
 
-        sidebar.py
+↓
 
-        header.py
+Review Transformation Quality
 
-        footer.py
+↓
 
-        statusbar.py
+Review Metadata
 
-        workspace_manager.py
+↓
 
-    workspaces/
+Approve
 
-        home/
+↓
 
-        connection/
-
-        detection/
-
-        canonical/
-
-        requirement/
-
-        operation/
-
-        processing/
-
-        validation/
-
-        reports/
-
-        settings/
-
-        help/
-
-    widgets/
-
-        cards/
-
-        tables/
-
-        forms/
-
-        previews/
-
-        dialogs/
-
-        notifications/
-
-        progress/
-
-        indicators/
-
-        breadcrumbs/
-
-    controllers/
-
-        navigation_controller.py
-
-        workspace_controller.py
-
-        session_controller.py
-
-    services/
-
-        navigation_service.py
-
-        notification_service.py
-
-        session_service.py
-
-        theme_service.py
-
-    themes/
-
-    assets/
-
-    styles/
-
-    icons/
+Continue to Requirement Workspace
 
 ==========================================================
-APPLICATION LAYOUT
+WORKSPACE LAYOUT
 ==========================================================
 
-The application should have:
++-----------------------------------------------------------------------+
+| Business Preview Studio                                               |
++-----------------------------------------------------------------------+
 
-+------------------------------------------------------------+
-| Header                                                     |
-+-----------+--------------------------------+---------------+
-|           |                                |               |
-| Sidebar   |        Main Workspace          | Inspector     |
-|           |                                |               |
-|           |                                |               |
-+-----------+--------------------------------+---------------+
-| Status Bar                                                |
-+------------------------------------------------------------+
+Transformation Pipeline
+
+-----------------------------------------------------------------------
+
+Business Dataset Preview
+
+-----------------------------------------------------------------------
+
+Mapping Validation
+
+-----------------------------------------------------------------------
+
+Transformation Quality
+
+-----------------------------------------------------------------------
+
+Metadata Explorer
+
+-----------------------------------------------------------------------
+
+Warnings / Suggestions
+
+-----------------------------------------------------------------------
+
+Business Statistics
+
+-----------------------------------------------------------------------
+
+Actions
+
+Approve
+
+Back to Mapping
+
+Export Preview
+
+Continue
 
 ==========================================================
-HEADER
+SECTION 1 — TRANSFORMATION PIPELINE
+==========================================================
+
+Visual pipeline
+
+Physical File
+
+↓
+
+Detection
+
+↓
+
+Business Mapping
+
+↓
+
+Business Preview
+
+↓
+
+Ready for Processing
+
+Highlight current stage.
+
+==========================================================
+SECTION 2 — SIDE-BY-SIDE COMPARISON
+==========================================================
+
+Split screen.
+
+LEFT
+
+Retailer Schema
+
+Original Columns
+
+Original Sample Values
+
+RIGHT
+
+Business Schema
+
+Canonical Fields
+
+Canonical Values
+
+Example
+
+STORE_ID
+
+↓
+
+Store
+
+ITEM_CODE
+
+↓
+
+UPC
+
+TOT_WGT
+
+↓
+
+Quantity
+
+NET_PRICE
+
+↓
+
+Sales
+
+Users should immediately understand the transformation.
+
+==========================================================
+SECTION 3 — BUSINESS DATASET PREVIEW
+==========================================================
+
+Display the Canonical Dataset.
+
+Columns such as
+
+Store
+
+UPC
+
+Description
+
+Quantity
+
+UOM
+
+Sales
+
+Category
+
+Brand
+
+Department
+
+Promotion
+
+Date
+
+Currency
+
+Tax
+
+Use business names only.
+
+Never display physical names.
+
+Support
+
+Filtering
+
+Sorting
+
+Searching
+
+Column resizing
+
+Pagination
+
+==========================================================
+SECTION 4 — MAPPING VALIDATION
 ==========================================================
 
 Display
 
-Application logo
+Required Fields
 
-Project name
+Mapped Fields
 
-Current workspace
+Optional Fields
 
-Execution status
+Missing Fields
 
-Theme switch
+Duplicate Mappings
 
-Settings shortcut
+Ignored Columns
 
-==========================================================
-SIDEBAR
-==========================================================
+Quantity Strategy
 
-Navigation should include
+UOM Strategy
 
-🏠 Home
+Confidence
 
-📁 Projects
+Clearly show
 
-🔌 Connection
+Passed
 
-🔍 Detection
+Warnings
 
-🧩 Canonical
-
-📋 Requirement
-
-⚙️ Operation
-
-📊 Processing
-
-✅ Validation
-
-📑 Reports
-
-⬇ Downloads
-
-📜 History
-
-⚙ Settings
-
-❓ Help
-
-Only Home should be functional.
-
-The rest are placeholders.
+Errors
 
 ==========================================================
-MAIN WORKSPACE
+SECTION 5 — TRANSFORMATION QUALITY
 ==========================================================
 
-Implement a reusable workspace framework.
+Professional dashboard.
 
-Every future layer should plug into it.
+Examples
 
-Workspace should support
+Overall Quality
 
-Title
+Mapping Confidence
 
-Description
+Required Coverage
 
-Toolbar
+Optional Coverage
 
-Content Area
+Manual Mapping Count
 
-Bottom Status
+Automatic Mapping Count
 
-Action Buttons
+Ignored Columns
 
-No business logic.
+Missing Columns
+
+Overall Readiness
+
+Display visually.
 
 ==========================================================
-RIGHT INSPECTOR
+SECTION 6 — BUSINESS STATISTICS
 ==========================================================
 
-Persistent inspector panel.
+Display
 
-Initially display
+Rows
 
-Session Information
+Columns
 
-Current Project
+Stores
 
-Selected Workspace
+Unique UPCs
 
-Notifications
+Categories
 
-Future layers will populate this.
+Brands
+
+Departments
+
+Date Range
+
+Null %
+
+Duplicate %
+
+Business Completeness
+
+Consume backend statistics only.
+
+==========================================================
+SECTION 7 — METADATA EXPLORER
+==========================================================
+
+Display
+
+Transformation Strategy
+
+Applied Rules
+
+Quantity Strategy
+
+UOM Strategy
+
+Ignored Columns
+
+Transformation Time
+
+Canonical Version
+
+Schema Version
+
+Warnings
+
+==========================================================
+SECTION 8 — WARNINGS
+==========================================================
+
+Examples
+
+Missing Required Field
+
+Low Mapping Confidence
+
+Duplicate Business Field
+
+Unused Retailer Column
+
+Quantity Fallback Used
+
+Unknown UOM
+
+Mixed Units
+
+Warnings should explain
+
+Problem
+
+Impact
+
+Recommendation
+
+==========================================================
+SECTION 9 — APPROVAL PANEL
+==========================================================
+
+Before Processing
+
+Display checklist
+
+✓ Mapping Complete
+
+✓ Validation Passed
+
+✓ Required Fields Present
+
+✓ Business Schema Ready
+
+✓ Canonical Dataset Generated
+
+Allow
+
+Approve
+
+Reject
+
+Back to Mapping
+
+==========================================================
+SECTION 10 — ACTIONS
+==========================================================
+
+Buttons
+
+Back to Mapping
+
+Export Preview
+
+Export Mapping
+
+Approve
+
+Continue
+
+Continue enabled only after approval.
+
+==========================================================
+INSPECTOR PANEL
+==========================================================
+
+Display
+
+Current Mapping
+
+Selected Business Field
+
+Transformation Details
+
+Confidence
+
+Warnings
+
+Metadata
 
 ==========================================================
 STATUS BAR
 ==========================================================
 
-Always visible.
+Display
 
-Show
+Workspace
 
-Current Layer
+Readiness
 
-Session State
+Rows
 
-Memory Indicator
+Business Fields
 
-Execution Status
-
-Streaming Status
-
-Time
-
-Version
-
-==========================================================
-HOME WORKSPACE
-==========================================================
-
-Create a professional dashboard.
-
-Include cards
-
-Create Project
-
-Open Project
-
-Recent Projects
-
-Platform Status
-
-Architecture Status
-
-Backend Health
-
-Frozen Layers
-
-Current Version
-
-Quick Start
-
-Documentation
-
-Recent Activity
-
-Future Workflow
-
-==========================================================
-NAVIGATION FRAMEWORK
-==========================================================
-
-Implement reusable navigation.
-
-Support
-
-Navigation history
-
-Active workspace
-
-Disabled workspaces
-
-Future breadcrumbs
-
-Future deep linking
-
-==========================================================
-SESSION MANAGEMENT
-==========================================================
-
-Create session framework.
-
-Track
-
-Current Project
-
-Current Workspace
-
-Execution Status
-
-User Preferences
-
-Theme
-
-Navigation History
-
-No backend state.
-
-==========================================================
-NOTIFICATION FRAMEWORK
-==========================================================
-
-Support
-
-Success
-
-Warning
-
-Error
-
-Information
-
-Progress
-
-Future layers should reuse this.
-
-==========================================================
-PROGRESS FRAMEWORK
-==========================================================
-
-Create reusable progress system.
-
-Support
-
-Spinner
-
-Progress Bar
-
-Step Progress
-
-Status Messages
-
-Future execution progress.
-
-==========================================================
-THEME
-==========================================================
-
-Professional enterprise theme.
-
-Light mode first.
-
-Dark mode architecture ready.
-
-Consistent spacing.
-
-Rounded cards.
-
-Subtle shadows.
-
-Minimal colors.
-
-Avoid bright gradients.
+Validation Status
 
 ==========================================================
 REUSABLE WIDGETS
 ==========================================================
 
-Build reusable widgets.
+Create
 
-Examples
+Pipeline Widget
 
-Info Card
+Comparison Viewer
 
-Metric Card
+Business Preview Table
 
-Section Header
+Quality Dashboard
 
-Status Badge
+Validation Checklist
 
-Notification Banner
+Metadata Card
 
-Empty State
+Transformation Card
 
-Loading State
+Warning Panel
 
-Toolbar
-
-Search Box
-
-Filter Bar
-
-Action Button
-
-Every future workspace should reuse them.
+Approval Card
 
 ==========================================================
 DESIGN PRINCIPLES
 ==========================================================
 
-Single Responsibility
+Business First
 
-Component Based
+Explain Everything
 
-Reusable Widgets
+Confidence Before Processing
 
-Workspace Driven
+No Hidden Transformations
 
-No Business Logic
-
-No Backend Coupling
-
-Controller Pattern
-
-Service Pattern
+Professional Data Review
 
 ==========================================================
-NON-NEGOTIABLE RULES
+NON-NEGOTIABLE
 ==========================================================
 
-UI NEVER performs
+UI NEVER
 
-Detection
+Builds Canonical Dataset
 
-Parsing
+Validates Mappings
 
-Aggregation
+Calculates Statistics
 
-Validation
+Calculates Confidence
 
-Calculations
+Transforms Data
 
-Report Generation
+Backend Canonical Layer owns all transformation.
 
-Business Rules
-
-UI ONLY
-
-Displays
-
-Collects User Input
-
-Shows Progress
-
-Shows Results
+UI only visualizes results.
 
 ==========================================================
-RESPONSIVENESS
+USER EXPERIENCE
 ==========================================================
+
+Professional.
+
+Modern.
+
+Readable.
+
+Minimal.
+
+Large datasets should remain responsive.
 
 Support
 
-Large monitors
+Sticky headers
 
-Laptop screens
+Pinned columns
 
-Collapsible sidebar
+Search
 
-Resizable inspector
+Filter
 
-Scrollable workspace
+Export
 
-==========================================================
-ACCESSIBILITY
-==========================================================
-
-Keyboard navigation ready
-
-Consistent spacing
-
-Readable typography
-
-Good contrast
-
-Large click targets
+Keyboard navigation
 
 ==========================================================
 TESTING
 ==========================================================
 
-Create UI tests covering
+Create tests covering
+
+Business preview
+
+Comparison viewer
+
+Validation display
+
+Quality dashboard
+
+Metadata explorer
+
+Warnings
+
+Approval workflow
+
+Export preview
 
 Navigation
 
-Workspace switching
+Inspector
 
-Session management
-
-Notification framework
-
-Theme
-
-Widget rendering
-
-Sidebar
-
-Status bar
-
-Home workspace
+Accessibility
 
 Responsive layout
 
 ==========================================================
-MANDATORY REGRESSION GATE
+REGRESSION
 ==========================================================
 
-Run the complete platform quality pipeline.
+Run
 
-Backend tests
+Backend Tests
 
-Architecture tests
+UI Tests
 
-Regression tests
+Regression Tests
 
-Contract tests
+Architecture Tests
 
-Performance tests
+Contract Tests
 
-End-to-End tests
+Performance Tests
 
-PLUS
+End-to-End Tests
 
-UI tests
+Fix every regression.
 
-Fix any regressions before completion.
+Every bug discovered must receive a permanent regression test.
 
 ==========================================================
 DELIVERABLES
@@ -585,71 +600,57 @@ DELIVERABLES
 
 Produce
 
-1. UI Sprint 1 Completion Report
+1. Business Preview Studio Architecture
 
-Including
+2. User Journey
 
-Architecture
+3. Wireframes
 
-Component hierarchy
+4. Component Hierarchy
 
-Workspace framework
+5. State Flow
 
-Navigation
+6. Workspace Screenshots
 
-Reusable widgets
+7. Transformation Flow
 
-Theme
+8. Widget Catalog
 
-Layout
+9. Test Summary
 
-Responsiveness
+10. Regression Summary
 
-Accessibility
+11. Known Limitations
 
-Testing
-
-Regression Summary
-
-Known limitations
-
-Future UI roadmap
+12. Future Enhancements
 
 ==========================================================
 EXIT CRITERIA
 ==========================================================
 
-✓ Application shell complete
+✓ Pipeline visualization complete
 
-✓ Navigation framework complete
+✓ Side-by-side comparison complete
 
-✓ Workspace framework complete
+✓ Business dataset preview complete
 
-✓ Home workspace complete
+✓ Mapping validation display complete
 
-✓ Sidebar complete
+✓ Quality dashboard complete
 
-✓ Header complete
+✓ Metadata explorer complete
 
-✓ Inspector complete
+✓ Warnings complete
 
-✓ Status bar complete
-
-✓ Notification framework complete
-
-✓ Session framework complete
-
-✓ Progress framework complete
-
-✓ Reusable widgets complete
+✓ Approval workflow complete
 
 ✓ UI tests passing
 
-✓ Backend regression tests passing
+✓ Backend regression passing
 
-✓ No architecture violations
+✓ Architecture review passed
 
-Finally
+✓ No business logic in UI
 
 Commit
 
@@ -657,6 +658,6 @@ Push
 
 Tag
 
-v2-ui-foundation
+v2-ui-business-preview
 
-Do NOT proceed to UI Sprint 2 until this framework is validated.
+Freeze UI Sprint 4B and write completion report.

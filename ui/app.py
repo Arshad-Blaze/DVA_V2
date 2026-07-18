@@ -18,6 +18,7 @@ from ui.workspaces.projects.workspace import render as render_projects
 from ui.workspaces.connection.workspace import render as render_connection
 from ui.workspaces.detection.workspace import render as render_detection
 from ui.workspaces.canonical.workspace import render as render_canonical
+from ui.workspaces.preview.workspace import render as render_preview
 from ui.workspaces.requirement.workspace import render as render_requirement
 from ui.workspaces.operation.workspace import render as render_operation
 from ui.workspaces.processing.workspace import render as render_processing
@@ -29,6 +30,9 @@ from ui.workspaces.help.workspace import render as render_help
 
 # Initialize all shared services (loads persisted session/projects/connections)
 shared.init_all()
+
+# Wire global navigation handler for workspace-to-workspace navigation
+shared.set_navigate_handler(on_navigate)
 
 session_svc = shared.session_svc()
 nav_svc = shared.nav_svc()
@@ -66,6 +70,7 @@ def main():
     ws_ctrl.register("connection", render_connection)
     ws_ctrl.register("detection", render_detection)
     ws_ctrl.register("canonical", render_canonical)
+    ws_ctrl.register("preview", render_preview)
     ws_ctrl.register("requirement", render_requirement)
     ws_ctrl.register("operation", render_operation)
     ws_ctrl.register("processing", render_processing)

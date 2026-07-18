@@ -5,7 +5,7 @@ from ui.controllers.navigation_controller import NavigationController
 
 
 FUNCTIONAL_WORKSPACES = {
-    "home", "projects", "connection", "detection", "canonical",
+    "home", "projects", "connection", "detection", "canonical", "preview",
 }
 
 
@@ -20,6 +20,7 @@ NAV_ITEMS = [
         ("connection", "Connection", "power"),
         ("detection", "Detection", "search"),
         ("canonical", "Canonical", "transform"),
+        ("preview", "Preview", "preview"),
         ("requirement", "Requirement", "assignment"),
         ("operation", "Operation", "play_circle"),
         ("processing", "Processing", "calculate"),

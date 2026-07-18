@@ -4,7 +4,7 @@ All workspaces and controllers import from here to access the same
 service instances that app.py creates. Prevents duplicate state.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from ui.services.project_service import ProjectService
 from ui.services.connection_service import ConnectionService
@@ -25,6 +25,8 @@ from ui.services.detection_service import DetectionService
 from ui.controllers.detection_controller import DetectionController
 from ui.services.canonical_service import CanonicalService
 from ui.controllers.canonical_controller import CanonicalController
+from ui.services.preview_service import PreviewService
+from ui.controllers.preview_controller import PreviewController
 
 
 # --- Lazy-initialized singletons ---
@@ -34,6 +36,17 @@ _storage: Optional[StorageService] = None
 _migration: Optional[MigrationService] = None
 _persistence: Optional[PersistenceService] = None
 
+# Global navigation handler (wired from app.py)
+_on_navigate_handler: Optional[Callable[[str], None]] = None
+
+def set_navigate_handler(handler: Callable[[str], None]) -> None:
+    global _on_navigate_handler
+    _on_navigate_handler = handler
+
+def navigate_to(workspace_id: str) -> None:
+    if _on_navigate_handler:
+        _on_navigate_handler(workspace_id)
+
 _session_svc: Optional[SessionService] = None
 _project_svc: Optional[ProjectService] = None
 _conn_svc: Optional[ConnectionService] = None
@@ -42,6 +55,7 @@ _notify_svc: Optional[NotificationService] = None
 _theme_svc: Optional[ThemeService] = None
 _detection_svc: Optional[DetectionService] = None
 _canonical_svc: Optional[CanonicalService] = None
+_preview_svc: Optional[PreviewService] = None
 
 _session_ctrl: Optional[SessionController] = None
 _nav_ctrl: Optional[NavigationController] = None
@@ -50,6 +64,7 @@ _project_ctrl: Optional[ProjectController] = None
 _conn_ctrl: Optional[ConnectionController] = None
 _detection_ctrl: Optional[DetectionController] = None
 _canonical_ctrl: Optional[CanonicalController] = None
+_preview_ctrl: Optional[PreviewController] = None
 
 
 def init_all(with_persistence: bool = True) -> None:
@@ -59,6 +74,7 @@ def init_all(with_persistence: bool = True) -> None:
     global _session_ctrl, _nav_ctrl, _ws_ctrl, _project_ctrl, _conn_ctrl
     global _detection_svc, _detection_ctrl
     global _canonical_svc, _canonical_ctrl
+    global _preview_svc, _preview_ctrl
 
     _context = WorkspaceContext()
     _storage = StorageService()
@@ -86,6 +102,8 @@ def init_all(with_persistence: bool = True) -> None:
     _detection_ctrl = DetectionController(_detection_svc, _notify_svc)
     _canonical_svc = CanonicalService(_context)
     _canonical_ctrl = CanonicalController(_canonical_svc, _notify_svc)
+    _preview_svc = PreviewService(_canonical_svc)
+    _preview_ctrl = PreviewController(_preview_svc, _notify_svc)
 
     # Update session service theme from the context
     is_dark = _context.theme == "dark" if _context else False
@@ -164,3 +182,11 @@ def canonical_svc() -> CanonicalService:
 def canonical_ctrl() -> CanonicalController:
     assert _canonical_ctrl is not None
     return _canonical_ctrl
+
+def preview_svc() -> PreviewService:
+    assert _preview_svc is not None
+    return _preview_svc
+
+def preview_ctrl() -> PreviewController:
+    assert _preview_ctrl is not None
+    return _preview_ctrl

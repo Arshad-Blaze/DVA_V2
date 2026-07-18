@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 
 from nicegui import ui
 from ui.widgets.cards import section_header, info_card, metric_card, status_badge, empty_state
-from ui.shared import canonical_svc, canonical_ctrl
+from ui.shared import canonical_svc, canonical_ctrl, navigate_to
 
 from dav_platform.core.contracts import CANONICAL_COLUMNS, ColumnMapping
 
@@ -256,7 +256,7 @@ def _render_actions():
             ui.button("Save Mapping", icon="save", color="positive",
                       on_click=lambda: canonical_ctrl().accept()).props("outline")
             ui.button("Continue", icon="arrow_forward", color="primary",
-                      ).props("flat")
+                      on_click=lambda: navigate_to("preview")).props("flat")
 
     if missing:
         with ui.row().classes("items-center gap-2 mt-2"):
@@ -280,6 +280,11 @@ def _progress_bar(value: float) -> ui.linear_progress:
 
 def _conf_color(v: float) -> str:
     return "positive" if v >= 0.9 else ("warning" if v >= 0.7 else "negative")
+
+
+def navigate_canonical():
+    """Navigate to Canonical Mapping workspace."""
+    navigate_to("canonical")
 
 
 def _metric_row(label: str, value: str, color: str) -> None:
