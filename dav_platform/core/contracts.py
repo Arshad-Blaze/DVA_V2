@@ -473,6 +473,78 @@ class OperationContext:
 # Operation Layer Contract
 # ============================================================================
 
+class ExecutionState(Enum):
+    """State of an execution step or overall execution."""
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    SKIPPED = "skipped"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+@dataclass
+class ExecutionStepResult:
+    """Result of executing a single step."""
+    step_number: int = 0
+    action: str = ""
+    state: ExecutionState = ExecutionState.PENDING
+    result: Any = None
+    error: Optional[str] = None
+    elapsed_seconds: float = 0.0
+    retries: int = 0
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class OperationLog:
+    """Structured execution log entry."""
+    timestamp: str = ""
+    level: str = "info"  # info, warning, error
+    step_number: Optional[int] = None
+    action: str = ""
+    message: str = ""
+    duration_seconds: float = 0.0
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class ExecutionMetadata:
+    """Metadata about the execution."""
+    workflow: str = ""
+    total_steps: int = 0
+    completed_steps: int = 0
+    failed_steps: int = 0
+    skipped_steps: int = 0
+    execution_duration: float = 0.0
+    warnings: List[str] = field(default_factory=list)
+    errors: List[str] = field(default_factory=list)
+    outcome: str = ""  # success, partial, failed, cancelled
+
+
+@dataclass
+class ExecutionResult:
+    """Result of executing an OperationContext."""
+    state: ExecutionState = ExecutionState.PENDING
+    step_results: List[ExecutionStepResult] = field(default_factory=list)
+    metadata: Optional[ExecutionMetadata] = None
+    logs: List[OperationLog] = field(default_factory=list)
+    warnings: List[str] = field(default_factory=list)
+    errors: List[str] = field(default_factory=list)
+
+    @property
+    def succeeded(self) -> bool:
+        return self.state == ExecutionState.COMPLETED
+
+    @property
+    def failed(self) -> bool:
+        return self.state == ExecutionState.FAILED
+
+    @property
+    def cancelled(self) -> bool:
+        return self.state == ExecutionState.CANCELLED
+
+
 @dataclass
 class ProcessingResult:
     """Output of the Processing layer."""
