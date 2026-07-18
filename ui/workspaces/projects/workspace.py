@@ -1,18 +1,13 @@
 """Projects workspace — Project Management.
 
 Sprint 2A: Create, open, rename, delete projects.
+Sprint 2.5: Persistence auto-save via shared ProjectService.
 """
 
 from datetime import datetime
 from nicegui import ui
 from ui.widgets.cards import info_card, section_header, empty_state
-from ui.controllers.project_controller import ProjectController
-from ui.services.project_service import ProjectService
-from ui.services.notification_service import NotificationService
-
-project_svc = ProjectService()
-notify_svc = NotificationService()
-project_ctrl = ProjectController(project_svc, notify_svc)
+from ui.shared import project_svc, project_ctrl
 
 
 def create_project_dialog() -> None:
@@ -24,7 +19,7 @@ def create_project_dialog() -> None:
         with ui.row().classes("w-full justify-end gap-2 mt-4"):
             ui.button("Cancel", on_click=dialog.close).props("flat")
             ui.button("Create", color="primary", on_click=lambda: (
-                project_ctrl.create_project(name.value, desc.value, source.value),
+                project_ctrl().create_project(name.value, desc.value, source.value),
                 dialog.close(),
                 refresh(),
             ))
@@ -39,7 +34,24 @@ def delete_project_dialog(pid: str, pname: str) -> None:
         with ui.row().classes("w-full justify-end gap-2 mt-4"):
             ui.button("Cancel", on_click=dialog.close).props("flat")
             ui.button("Delete", color="negative", on_click=lambda: (
-                project_ctrl.delete_project(pid),
+                project_ctrl().delete_project(pid),
+                dialog.close(),
+                refresh(),
+            ))
+    dialog.open()
+
+
+def rename_project_dialog(pid: str) -> None:
+    p = project_svc().get_project(pid)
+    if not p:
+        return
+    with ui.dialog() as dialog, ui.card().classes("w-96 p-6"):
+        ui.label("Rename Project").classes("text-xl font-bold mb-4")
+        name = ui.input("Project Name", value=p["name"]).classes("w-full")
+        with ui.row().classes("w-full justify-end gap-2 mt-4"):
+            ui.button("Cancel", on_click=dialog.close).props("flat")
+            ui.button("Rename", color="primary", on_click=lambda: (
+                project_ctrl().rename_project(pid, name.value),
                 dialog.close(),
                 refresh(),
             ))
@@ -53,13 +65,14 @@ def refresh() -> None:
 
 
 def _render_projects_list():
-    projects = project_ctrl.projects
+    projects = project_svc().list_projects()
     if not projects:
         empty_state("No projects yet. Create one to get started.", "folder_open")
         return
 
+    current_pid = project_svc().current_project_id
     for p in projects:
-        is_current = p["id"] == project_ctrl.current_project["id"] if project_ctrl.current_project else False
+        is_current = p["id"] == current_pid
         with ui.card().classes("w-full p-4 cursor-pointer").props("clickable") as card:
             with ui.row().classes("items-center justify-between w-full"):
                 with ui.row().classes("items-center gap-3"):
@@ -77,7 +90,7 @@ def _render_projects_list():
                 with ui.row().classes("items-center gap-1"):
                     if not is_current:
                         ui.button(icon="folder_open", on_click=lambda pid=p["id"]: (
-                            project_ctrl.open_project(pid),
+                            project_ctrl().open_project(pid),
                             refresh(),
                         )).props("flat round dense size=sm")
                     ui.button(icon="edit", on_click=lambda pid=p["id"]: (
@@ -86,23 +99,6 @@ def _render_projects_list():
                     ui.button(icon="delete", on_click=lambda pid=p["id"], pn=p["name"]: (
                         delete_project_dialog(pid, pn),
                     )).props("flat round dense size=sm color=negative")
-
-
-def rename_project_dialog(pid: str) -> None:
-    project = project_svc.get_project(pid)
-    if not project:
-        return
-    with ui.dialog() as dialog, ui.card().classes("w-96 p-6"):
-        ui.label("Rename Project").classes("text-xl font-bold mb-4")
-        name = ui.input("Project Name", value=project["name"]).classes("w-full")
-        with ui.row().classes("w-full justify-end gap-2 mt-4"):
-            ui.button("Cancel", on_click=dialog.close).props("flat")
-            ui.button("Rename", color="primary", on_click=lambda: (
-                project_ctrl.rename_project(pid, name.value),
-                dialog.close(),
-                refresh(),
-            ))
-    dialog.open()
 
 
 projects_container = ui.column()
@@ -124,8 +120,8 @@ def _render_content():
 
     _render_projects_list()
 
-    if project_ctrl.current_project:
-        cp = project_ctrl.current_project
+    cp = project_svc().current_project
+    if cp:
         ui.space().classes("h-4")
         section_header("Current Project")
         with ui.card().classes("w-full p-4"):
@@ -136,7 +132,7 @@ def _render_content():
                     if cp.get("source"):
                         ui.label(f"Source: {cp['source']}").classes("text-xs text-gray-400")
                 ui.button("Close Project", color="warning", on_click=lambda: (
-                    project_ctrl.close_project(),
+                    project_ctrl().close_project(),
                     refresh(),
                 ))
 

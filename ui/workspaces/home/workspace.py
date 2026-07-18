@@ -1,8 +1,11 @@
-"""Home workspace — Professional dashboard."""
+"""Home workspace — Professional dashboard.
 
-from datetime import datetime
+Sprint 2.5: Shows recent projects from persistence, resume session.
+"""
+
 from nicegui import ui
-from ui.widgets.cards import info_card, metric_card, section_header, workspace_card
+from ui.widgets.cards import info_card, metric_card, section_header
+from ui.shared import project_svc, session_svc, conn_svc
 
 
 BACKEND_LAYERS = [
@@ -32,7 +35,18 @@ def render():
             with ui.column():
                 ui.label("DVA Platform v2").classes("text-2xl font-bold")
                 ui.label("Retail Data Processing Platform").classes("text-sm opacity-80")
-            ui.label(f"v2.0.0").classes("text-xs opacity-60")
+            ui.label("v2.0.0").classes("text-xs opacity-60")
+
+    # Resume session banner (if a project was open)
+    if project_svc().current_project:
+        cp = project_svc().current_project
+        with ui.card().classes("w-full p-3 border-l-4 border-primary mt-2"):
+            with ui.row().classes("items-center justify-between w-full"):
+                with ui.row().classes("items-center gap-3"):
+                    ui.icon("history", color="primary").classes("text-xl")
+                    ui.label(f"Resume Project: {cp['name']}").classes("text-sm font-semibold")
+                ui.button("Continue", color="primary", size="sm",
+                          on_click=lambda: None).props("dense")
 
     # Quick actions
     ui.space().classes("h-4")
@@ -46,9 +60,23 @@ def render():
     section_header("Platform Status")
     with ui.row().classes("w-full gap-4"):
         metric_card("Layers", "9", "layers", "primary")
-        metric_card("Tests", "931", "science", "positive")
+        metric_card("Tests", "993", "science", "positive")
         metric_card("Status", "Ready", "check_circle", "positive")
         metric_card("Version", "2.0.0", "tag", "info")
+
+    # Recent projects
+    recent = project_svc().recent_projects(4)
+    if recent:
+        ui.space().classes("h-4")
+        section_header("Recent Projects")
+        with ui.grid(columns=2).classes("w-full gap-3"):
+            for p in recent:
+                with ui.card().classes("p-3 cursor-pointer").props("clickable"):
+                    with ui.row().classes("items-center gap-2"):
+                        ui.icon("folder", color="primary").classes("text-xl")
+                        with ui.column().classes("gap-0"):
+                            ui.label(p["name"]).classes("text-sm font-semibold")
+                            ui.label(p.get("description", "")).classes("text-xs text-gray-500")
 
     # Architecture status
     ui.space().classes("h-4")

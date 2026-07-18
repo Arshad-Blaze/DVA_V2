@@ -1,17 +1,13 @@
 """Connection workspace — Data Source Configuration & File Browsing.
 
 Sprint 2B: Connect to data sources, browse files, manage connections.
+Sprint 2.5: Persistence auto-save via shared ConnectionService.
 """
 
 from nicegui import ui
 from ui.widgets.cards import section_header, info_card, empty_state, status_badge
-from ui.services.connection_service import ConnectionService, ConnectionType, CONNECTION_TYPES
-from ui.services.notification_service import NotificationService
-from ui.controllers.connection_controller import ConnectionController
-
-conn_svc = ConnectionService()
-notify_svc = NotificationService()
-conn_ctrl = ConnectionController(conn_svc, notify_svc)
+from ui.services.connection_service import ConnectionType, CONNECTION_TYPES
+from ui.shared import conn_svc, conn_ctrl
 
 
 def add_connection_dialog() -> None:
@@ -27,7 +23,7 @@ def add_connection_dialog() -> None:
         with ui.row().classes("w-full justify-end gap-2 mt-4"):
             ui.button("Cancel", on_click=dialog.close).props("flat")
             ui.button("Add", color="primary", on_click=lambda: (
-                conn_ctrl.add_connection(name.value, ctype.value, path.value, desc.value),
+                conn_ctrl().add_connection(name.value, ctype.value, path.value, desc.value),
                 dialog.close(),
                 refresh(),
             ))
@@ -41,7 +37,7 @@ def confirm_remove_dialog(cid: str, cname: str) -> None:
         with ui.row().classes("w-full justify-end gap-2 mt-4"):
             ui.button("Cancel", on_click=dialog.close).props("flat")
             ui.button("Remove", color="negative", on_click=lambda: (
-                conn_ctrl.remove_connection(cid),
+                conn_ctrl().remove_connection(cid),
                 dialog.close(),
                 refresh(),
             ))
@@ -55,10 +51,11 @@ def refresh() -> None:
 
 
 def _render_browser() -> None:
-    if not conn_ctrl.current_connection:
+    current = conn_svc().current_connection
+    if not current:
         return
 
-    conn = conn_ctrl.current_connection
+    conn = current
     ui.space().classes("h-4")
     section_header(f"File Browser — {conn['name']}")
 
@@ -66,15 +63,8 @@ def _render_browser() -> None:
     with ui.card().classes("w-full p-4"):
         ui.label(f"Path: {path}").classes("text-sm font-mono text-gray-500 mb-2")
 
-        entries = conn_ctrl.browse_directory(path)
+        entries = conn_svc().browse_directory(path)
         if entries:
-            with ui.table(rows=entries, columns=[
-                {"name": "name", "label": "Name", "field": "name"},
-                {"name": "size", "label": "Size", "field": "size"},
-                {"name": "modified", "label": "Modified", "field": "modified"},
-                {"name": "type", "label": "Type", "field": "is_dir"},
-            ]).classes("w-full"):
-                pass
             for e in entries[:50]:
                 icon = "folder" if e["is_dir"] else "description"
                 size_str = f"{e['size']:,} B" if e["size"] > 0 else "-"
@@ -91,17 +81,18 @@ def _render_connections():
     section_header("Data Source Connections")
 
     with ui.row().classes("w-full items-center justify-between mb-4"):
-        ui.label(f"{len(conn_ctrl.connections)} connections").classes("text-sm text-gray-500")
+        ui.label(f"{len(conn_svc().list_connections())} connections").classes("text-sm text-gray-500")
         ui.button("+ Add Connection", color="primary", on_click=add_connection_dialog)
 
-    connections = conn_ctrl.connections
+    connections = conn_svc().list_connections()
     if not connections:
         empty_state("No connections configured. Add a data source to get started.", "power_off")
         return
 
+    current_cid = conn_svc().current_connection_id
     for c in connections:
-        is_current = c["id"] == conn_ctrl.current_connection["id"] if conn_ctrl.current_connection else False
-        tinfo = conn_ctrl.get_type_info(c["conn_type"])
+        is_current = c["id"] == current_cid
+        tinfo = conn_svc().get_type_info(c["conn_type"])
         is_connected = c["status"] == "connected"
 
         with ui.card().classes("w-full p-4 cursor-pointer").props("clickable") as card:
@@ -123,12 +114,12 @@ def _render_connections():
                 with ui.row().classes("items-center gap-2"):
                     if is_connected:
                         ui.button(icon="link_off", on_click=lambda cid=c["id"]: (
-                            conn_ctrl.disconnect(cid),
+                            conn_ctrl().disconnect(cid),
                             refresh(),
                         )).props("flat round dense size=sm color=warning")
                     else:
                         ui.button(icon="link", on_click=lambda cid=c["id"]: (
-                            conn_ctrl.connect(cid),
+                            conn_ctrl().connect(cid),
                             refresh(),
                         )).props("flat round dense size=sm color=positive")
                     ui.button(icon="delete", on_click=lambda cid=c["id"], cn=c["name"]: (

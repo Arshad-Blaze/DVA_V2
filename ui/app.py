@@ -1,17 +1,13 @@
 """DVA Platform UI — Application Entry Point.
 
-UI Sprint 1: Application Shell & Workspace Framework.
+UI Sprint 2.5: Persistence Foundation & Workspace Context.
+Saves/restores session, projects, and connections across application restarts.
 """
 
 from nicegui import app, ui
 
-from ui.controllers.navigation_controller import NavigationController
-from ui.controllers.session_controller import SessionController
+from ui import shared
 from ui.controllers.workspace_controller import WorkspaceController
-from ui.services.navigation_service import NavigationService
-from ui.services.notification_service import NotificationService
-from ui.services.session_service import SessionService
-from ui.services.theme_service import ThemeService
 from ui.shell.layout import create_layout
 from ui.shell.workspace_manager import WorkspaceManager
 from ui.styles.custom import CUSTOM_CSS
@@ -30,16 +26,19 @@ from ui.workspaces.reports.workspace import render as render_reports
 from ui.workspaces.settings.workspace import render as render_settings
 from ui.workspaces.help.workspace import render as render_help
 
-# Singletons
-session_svc = SessionService()
-nav_svc = NavigationService()
-notify_svc = NotificationService()
-theme_svc = ThemeService()
+
+# Initialize all shared services (loads persisted session/projects/connections)
+shared.init_all()
+
+session_svc = shared.session_svc()
+nav_svc = shared.nav_svc()
+notify_svc = shared.notify_svc()
+theme_svc = shared.theme_svc()
 
 # Controllers
-session_ctrl = SessionController(session_svc, theme_svc)
-nav_ctrl = NavigationController(nav_svc)
-ws_ctrl = WorkspaceController(session_svc, nav_svc)
+session_ctrl = shared.session_ctrl()
+nav_ctrl = shared.nav_ctrl()
+ws_ctrl = shared.ws_ctrl()
 ws_manager = WorkspaceManager(ws_ctrl)
 
 
@@ -47,14 +46,21 @@ def on_navigate(workspace_id: str) -> None:
     nav_svc.navigate(workspace_id)
     session_svc.current_workspace = workspace_id
     ws_manager.switch_to(workspace_id)
+    _auto_save()
+
+
+def _auto_save() -> None:
+    """Persist current session state on navigation changes."""
+    persistence = shared.persistence()
+    persistence.save_session()
 
 
 @ui.page("/")
 def main():
     ui.add_head_html(f"<style>{CUSTOM_CSS}</style>")
-    ui.dark_mode().disable()
+    ui.dark_mode().enable() if theme_svc.is_dark else ui.dark_mode().disable()
 
-    # Register all workspaces with the content controller
+    # Register all workspaces
     ws_ctrl.register("home", render_home)
     ws_ctrl.register("projects", render_projects)
     ws_ctrl.register("connection", render_connection)

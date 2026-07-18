@@ -1,7 +1,7 @@
 """Connection service — manages data source connections.
 
-Handles connection state, file browsing, and data source configuration.
-Never performs actual business logic — only UI state and path browsing.
+Supports persistence via optional PersistenceService injection.
+If no persistence is provided, operates in-memory (backward compatible).
 """
 
 from typing import Any, Dict, List, Optional
@@ -25,15 +25,30 @@ CONNECTION_TYPES = {
 
 
 class ConnectionService:
-    """Manages connection state and file browsing within the UI session."""
+    """Manages connection state and file browsing within the UI session.
 
-    def __init__(self):
+    When a PersistenceService is provided, all CRUD operations
+    automatically persist to disk.
+    """
+
+    def __init__(self, persistence=None, context=None):
         self._connections: Dict[str, Dict[str, Any]] = {}
         self._current_connection_id: Optional[str] = None
         self._current_path: str = "/"
+        self._persistence = persistence
+        self._context = context
 
-        # Seed demo connections
-        self._seed_demo_connections()
+        # Load from persistence if available
+        if self._persistence:
+            loaded = self._persistence.load_connections()
+            for c in loaded:
+                cid = c.get("id")
+                if cid:
+                    self._connections[cid] = c
+
+        # Seed demo connections only if no persisted data
+        if not self._connections:
+            self._seed_demo_connections()
 
     def _seed_demo_connections(self) -> None:
         demos = [
@@ -63,6 +78,7 @@ class ConnectionService:
             c["connected_at"] = datetime.now()
             c["file_count"] = 0
             self._connections[cid] = c
+        self._persist()
 
     def add_connection(self, name: str, conn_type: str = ConnectionType.LOCAL,
                        path: str = "", description: str = "") -> Dict[str, Any]:
@@ -78,6 +94,7 @@ class ConnectionService:
             "file_count": 0,
         }
         self._connections[cid] = connection
+        self._persist()
         return connection
 
     def connect(self, connection_id: str) -> bool:
@@ -87,6 +104,10 @@ class ConnectionService:
         conn["status"] = "connected"
         conn["connected_at"] = datetime.now()
         self._current_connection_id = connection_id
+        if self._context:
+            self._context.current_connection_id = connection_id
+            self._context.add_recent_connection(connection_id)
+        self._persist()
         return True
 
     def disconnect(self, connection_id: str) -> bool:
@@ -97,13 +118,19 @@ class ConnectionService:
         conn["connected_at"] = None
         if self._current_connection_id == connection_id:
             self._current_connection_id = None
+            if self._context:
+                self._context.current_connection_id = None
+        self._persist()
         return True
 
     def remove_connection(self, connection_id: str) -> bool:
         if connection_id in self._connections:
             if self._current_connection_id == connection_id:
                 self._current_connection_id = None
+                if self._context:
+                    self._context.current_connection_id = None
             del self._connections[connection_id]
+            self._persist()
             return True
         return False
 
@@ -129,6 +156,8 @@ class ConnectionService:
     @current_connection_id.setter
     def current_connection_id(self, value: Optional[str]) -> None:
         self._current_connection_id = value
+        if self._context:
+            self._context.current_connection_id = value
 
     def set_current_path(self, path: str) -> None:
         self._current_path = path
@@ -138,11 +167,6 @@ class ConnectionService:
         return self._current_path
 
     def browse_directory(self, path: str) -> List[Dict[str, Any]]:
-        """Browse a directory and return its contents.
-
-        Returns a list of file/directory entries with metadata.
-        Safe — never executes business logic.
-        """
         entries = []
         try:
             p = Path(path).expanduser().resolve()
@@ -163,3 +187,7 @@ class ConnectionService:
         except (OSError, PermissionError):
             pass
         return entries
+
+    def _persist(self) -> None:
+        if self._persistence:
+            self._persistence.save_connections(self.list_connections())
