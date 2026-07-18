@@ -357,6 +357,7 @@ class CanonicalMetadata:
     encoding: str = "utf-8"
     flatten_strategy: str = "none"  # "hierarchy", "multiline", "direct"
     uom_strategy: str = "none"  # "detected", "default"
+    validation_summary: Optional[dict] = None
     ignored_columns: List[str] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
     transformation_log: List[str] = field(default_factory=list)

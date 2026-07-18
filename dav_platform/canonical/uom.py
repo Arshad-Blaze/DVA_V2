@@ -3,7 +3,7 @@
 Normalizes common unit of measure values to standard format.
 """
 
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import polars as pl
 
@@ -43,7 +43,7 @@ def normalize_uom(
 ) -> Optional[pl.DataFrame]:
     """Normalize UOM column in DataFrame.
 
-    Maps common UOM values to standard format.
+    Maps common UOM values to standard format using vectorized operations.
     If no UOM column exists, adds one with default "EA".
     """
     if df is None or df.is_empty():
@@ -57,22 +57,16 @@ def normalize_uom(
             break
 
     if uom_col:
-        # Normalize existing UOM values
+        # Normalize using vectorized replace (stays in Rust kernel)
         df = df.with_columns(
-            pl.col(uom_col).map_elements(
-                lambda x: UOM_MAP.get(str(x).upper().strip(), "EA") if x else "EA",
-                return_dtype=pl.Utf8,
-            ).alias("uom")
+            pl.col(uom_col)
+            .str.to_uppercase()
+            .str.strip_chars()
+            .replace_strict(UOM_MAP, default="EA")
+            .alias("uom")
         )
     else:
         # Add default UOM column
         df = df.with_columns(pl.lit("EA").alias("uom"))
 
     return df
-
-
-def get_uom_info(result: DiscoveryResult) -> Optional[str]:
-    """Get UOM column name if available."""
-    for c in result.candidate_uom:
-        return c.physical_column
-    return None

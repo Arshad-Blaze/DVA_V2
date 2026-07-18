@@ -1,6 +1,7 @@
 """Canonical preview generation.
 
 Generates a preview of the canonical dataset for UI display.
+Only displays business fields — never exposes retailer column names.
 """
 
 from typing import Dict, List, Optional
@@ -15,23 +16,33 @@ def generate_canonical_preview(
     mappings: List[ColumnMapping],
     max_rows: int = 10,
 ) -> Optional[pl.DataFrame]:
-    """Generate canonical preview — mapped column names.
+    """Generate canonical preview — business columns only.
 
-    Takes the flatten preview and renames columns according to mappings.
+    Takes the flatten preview and renames field_N columns according to mappings.
+    Returns only mapped canonical columns — never exposes physical names,
+    record types, or internal columns.
     """
     if flatten_preview is None or not mappings:
         return None
 
     df = flatten_preview.head(max_rows)
 
-    # Build rename map from field_N columns to canonical names
+    # Build rename map: field_N -> canonical_name
+    # Flatten preview uses field_0, field_1, etc. for split columns
     rename_map = {}
-    for m in mappings:
-        # flatten_preview uses field_0, field_1, etc.
-        # We need to find which field_N corresponds to the physical column
-        # This is a best-effort mapping based on column position
-        pass
+    mapped_fields = set()
+    for i, m in enumerate(mappings):
+        field_name = f"field_{i}"
+        if field_name in df.columns:
+            rename_map[field_name] = m.canonical_name
+            mapped_fields.add(field_name)
 
-    # For now, return flatten preview as-is
-    # The canonical preview will be generated after actual data loading
+    if rename_map:
+        df = df.rename(rename_map)
+
+    # Select only the renamed canonical columns to avoid exposing
+    # unmapped field_N columns, record types, or other internal columns
+    canonical_cols = list(rename_map.values())
+    df = df.select(canonical_cols)
+
     return df

@@ -51,6 +51,41 @@ class TestValidateCanonical:
         result = validate_canonical(ds)
         assert len(result.warnings) > 0
 
+    def test_mapped_column_not_in_dataframe(self):
+        ds = CanonicalDataset(
+            file_path="/test.csv",
+            column_mappings=[
+                ColumnMapping(physical_column="MissingCol", canonical_name="store"),
+            ],
+            dataframe=pl.DataFrame({"A": [1]}),
+        )
+        result = validate_canonical(ds)
+        assert any("not in DataFrame" in w for w in result.warnings)
+
+    def test_empty_dataframe(self):
+        ds = CanonicalDataset(
+            file_path="/test.csv",
+            column_mappings=[
+                ColumnMapping(physical_column="A", canonical_name="store"),
+            ],
+            dataframe=pl.DataFrame({"A": []}),
+        )
+        result = validate_canonical(ds)
+        assert result.passed is True
+        assert any("empty" in w.lower() for w in result.warnings)
+
+    def test_physical_in_dict_not_in_mappings(self):
+        ds = CanonicalDataset(
+            file_path="/test.csv",
+            physical_to_canonical={"A": "store", "B": "upc"},
+            column_mappings=[
+                ColumnMapping(physical_column="A", canonical_name="store"),
+            ],
+            dataframe=pl.DataFrame({"A": [1], "B": [2]}),
+        )
+        result = validate_canonical(ds)
+        assert any("mapping dict but not in mappings" in w for w in result.warnings)
+
 
 class TestValidateMappingCompleteness:
     def test_complete_mapping(self):

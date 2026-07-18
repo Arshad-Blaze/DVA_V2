@@ -4,7 +4,7 @@ Maps physical column names to canonical business names.
 Uses candidate mappings from Detection with confidence scores.
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from dav_platform.core.contracts import (
     CandidateMapping,

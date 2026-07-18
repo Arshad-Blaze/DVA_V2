@@ -1,14 +1,14 @@
 """Quantity normalization.
 
-Applies business rules to resolve quantity from multiple sources.
+Applies business rule: Weight > 0 → weight, Units > 0 → unit, else none.
 Downstream Processing consumes only the canonical Quantity field.
 """
 
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 import polars as pl
 
-from dav_platform.core.contracts import DiscoveryResult
+from dav_platform.core.contracts import CandidateMapping, DiscoveryResult
 
 
 def normalize_quantity(
@@ -63,7 +63,7 @@ def normalize_quantity(
 
 
 def _find_column(
-    candidates,
+    candidates: List[CandidateMapping],
     df: pl.DataFrame,
 ) -> Optional[str]:
     """Find first candidate column that exists in DataFrame."""

@@ -86,3 +86,72 @@ class TestCanonicalEngine:
 
         assert ds.dataframe is not None
         assert ds.row_count == 3
+
+    def test_transform_with_none_data(self):
+        result = DiscoveryResult(
+            file_path="/test.csv",
+            file_type=FileType.DELIMITED,
+            columns=["Store", "UPC"],
+            candidate_store=[CandidateMapping(physical_column="Store", confidence=0.9)],
+            candidate_upc=[CandidateMapping(physical_column="UPC", confidence=0.95)],
+        )
+
+        engine = CanonicalEngine()
+        ds = engine.transform(result, data=None)
+
+        assert ds.dataframe is None
+        assert ds.metadata.total_rows == 0
+        assert ds.metadata.validation_summary is not None
+        assert ds.metadata.validation_summary["passed"] is True
+
+    def test_transform_with_empty_data(self):
+        import polars as pl
+        result = DiscoveryResult(
+            file_path="/test.csv",
+            file_type=FileType.DELIMITED,
+            columns=["Store", "UPC"],
+            candidate_store=[CandidateMapping(physical_column="Store", confidence=0.9)],
+            candidate_upc=[CandidateMapping(physical_column="UPC", confidence=0.95)],
+        )
+
+        engine = CanonicalEngine()
+        ds = engine.transform(result, data=pl.DataFrame({"Store": [], "UPC": []}))
+
+        assert ds.metadata.total_rows == 0
+
+    def test_validation_summary_populated(self):
+        result = DiscoveryResult(
+            file_path="/test.csv",
+            file_type=FileType.DELIMITED,
+            columns=["Store", "UPC", "Price"],
+            candidate_store=[CandidateMapping(physical_column="Store", confidence=0.9)],
+            candidate_upc=[CandidateMapping(physical_column="UPC", confidence=0.95)],
+            candidate_price=[CandidateMapping(physical_column="Price", confidence=0.8)],
+        )
+
+        engine = CanonicalEngine()
+        ds = engine.transform(result)
+
+        vs = ds.metadata.validation_summary
+        assert vs is not None
+        assert "passed" in vs
+        assert "issues" in vs
+        assert "warnings" in vs
+        assert "checked_columns" in vs
+        assert "total_rows" in vs
+
+    def test_streaming_transform(self):
+        import polars as pl
+
+        def chunks():
+            yield pl.DataFrame({"A": [1, 2], "B": ["x", "y"]})
+            yield pl.DataFrame({"A": [3], "B": ["z"]})
+
+        result = DiscoveryResult(
+            file_path="/test.csv",
+            file_type=FileType.DELIMITED,
+        )
+
+        engine = CanonicalEngine()
+        datasets = list(engine.transform_streaming(chunks(), result))
+        assert len(datasets) == 2
