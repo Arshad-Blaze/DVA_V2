@@ -319,18 +319,79 @@ class DiscoveryResult:
 # Canonical Layer Contract
 # ============================================================================
 
+# Standard canonical column names
+CANONICAL_COLUMNS = {
+    "store": "Store identifier",
+    "upc": "Universal Product Code",
+    "description": "Product description",
+    "quantity": "Resolved quantity (weighted or units)",
+    "weight": "Weight value",
+    "price": "Unit price",
+    "category": "Product category",
+    "brand": "Product brand",
+    "department": "Department identifier",
+    "date": "Transaction date",
+    "uom": "Unit of measure",
+}
+
+
+@dataclass
+class ColumnMapping:
+    """A single physical-to-canonical column mapping."""
+    physical_column: str
+    canonical_name: str
+    confidence: float = 0.0
+    source: str = "candidate"  # "candidate", "rule", "user", "default"
+
+
+@dataclass
+class CanonicalMetadata:
+    """Metadata about the canonical transformation."""
+    total_rows: int = 0
+    mapped_columns: int = 0
+    unmapped_columns: int = 0
+    quantity_column: Optional[str] = None
+    quantity_type: str = "none"  # "weighted_qty", "units", "weight", "unit", "none"
+    confidence: float = 0.0
+    source_file_type: str = ""
+    encoding: str = "utf-8"
+    flatten_strategy: str = "none"  # "hierarchy", "multiline", "direct"
+    uom_strategy: str = "none"  # "detected", "default"
+    ignored_columns: List[str] = field(default_factory=list)
+    warnings: List[str] = field(default_factory=list)
+    transformation_log: List[str] = field(default_factory=list)
+
+
 @dataclass
 class CanonicalDataset:
     """Standardized dataset with business-meaningful column names.
 
     No downstream layer should know retailer-specific column names.
     """
-    df: pl.DataFrame
-    source_file: str = ""
-    row_count: int = 0
-    column_count: int = 0
-    resolved_quantity_column: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    file_path: str = ""
+    physical_to_canonical: Dict[str, str] = field(default_factory=dict)
+    canonical_columns: List[str] = field(default_factory=list)
+    column_mappings: List[ColumnMapping] = field(default_factory=list)
+    dataframe: Optional[pl.DataFrame] = None
+    metadata: Optional[CanonicalMetadata] = None
+    warnings: List[str] = field(default_factory=list)
+    recommendations: List[str] = field(default_factory=list)
+
+    @property
+    def df(self) -> Optional[pl.DataFrame]:
+        return self.dataframe
+
+    @property
+    def row_count(self) -> int:
+        return self.dataframe.height if self.dataframe is not None else 0
+
+    @property
+    def column_count(self) -> int:
+        return self.dataframe.width if self.dataframe is not None else 0
+
+    @property
+    def resolved_quantity_column(self) -> Optional[str]:
+        return self.metadata.quantity_column if self.metadata else None
 
 
 # ============================================================================

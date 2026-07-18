@@ -38,16 +38,14 @@ class TestDiscoveryResult:
 
 class TestCanonicalDataset:
     def test_creation(self):
-        df = pl.DataFrame({"store": ["S1"], "upc": ["123"]})
-        ds = CanonicalDataset(df=df, source_file="test.csv")
+        ds = CanonicalDataset(file_path="test.csv")
+        assert ds.file_path == "test.csv"
         assert ds.row_count == 0
         assert ds.column_count == 0
 
-    def test_from_df(self):
+    def test_with_data(self):
         df = pl.DataFrame({"store": ["S1", "S2"], "upc": ["123", "456"]})
-        ds = CanonicalDataset(df=df)
-        ds.row_count = df.height
-        ds.column_count = df.width
+        ds = CanonicalDataset(file_path="test.csv", dataframe=df)
         assert ds.row_count == 2
         assert ds.column_count == 2
 
