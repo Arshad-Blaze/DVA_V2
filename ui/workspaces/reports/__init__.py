@@ -1,0 +1,1 @@
+"""Reports workspace — placeholder."""

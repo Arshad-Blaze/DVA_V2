@@ -1,0 +1,1 @@
+"""Validation workspace — placeholder."""
