@@ -23,6 +23,8 @@ from ui.services.migration_service import MigrationService
 from ui.services.workspace_context import WorkspaceContext
 from ui.services.detection_service import DetectionService
 from ui.controllers.detection_controller import DetectionController
+from ui.services.canonical_service import CanonicalService
+from ui.controllers.canonical_controller import CanonicalController
 
 
 # --- Lazy-initialized singletons ---
@@ -39,6 +41,7 @@ _nav_svc: Optional[NavigationService] = None
 _notify_svc: Optional[NotificationService] = None
 _theme_svc: Optional[ThemeService] = None
 _detection_svc: Optional[DetectionService] = None
+_canonical_svc: Optional[CanonicalService] = None
 
 _session_ctrl: Optional[SessionController] = None
 _nav_ctrl: Optional[NavigationController] = None
@@ -46,6 +49,7 @@ _ws_ctrl: Optional[WorkspaceController] = None
 _project_ctrl: Optional[ProjectController] = None
 _conn_ctrl: Optional[ConnectionController] = None
 _detection_ctrl: Optional[DetectionController] = None
+_canonical_ctrl: Optional[CanonicalController] = None
 
 
 def init_all(with_persistence: bool = True) -> None:
@@ -54,6 +58,7 @@ def init_all(with_persistence: bool = True) -> None:
     global _session_svc, _project_svc, _conn_svc, _nav_svc, _notify_svc, _theme_svc
     global _session_ctrl, _nav_ctrl, _ws_ctrl, _project_ctrl, _conn_ctrl
     global _detection_svc, _detection_ctrl
+    global _canonical_svc, _canonical_ctrl
 
     _context = WorkspaceContext()
     _storage = StorageService()
@@ -79,6 +84,8 @@ def init_all(with_persistence: bool = True) -> None:
     _conn_ctrl = ConnectionController(_conn_svc, _notify_svc)
     _detection_svc = DetectionService(_context)
     _detection_ctrl = DetectionController(_detection_svc, _notify_svc)
+    _canonical_svc = CanonicalService(_context)
+    _canonical_ctrl = CanonicalController(_canonical_svc, _notify_svc)
 
     # Update session service theme from the context
     is_dark = _context.theme == "dark" if _context else False
@@ -149,3 +156,11 @@ def detection_svc() -> DetectionService:
 def detection_ctrl() -> DetectionController:
     assert _detection_ctrl is not None
     return _detection_ctrl
+
+def canonical_svc() -> CanonicalService:
+    assert _canonical_svc is not None
+    return _canonical_svc
+
+def canonical_ctrl() -> CanonicalController:
+    assert _canonical_ctrl is not None
+    return _canonical_ctrl
