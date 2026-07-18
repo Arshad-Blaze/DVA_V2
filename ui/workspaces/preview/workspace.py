@@ -6,7 +6,7 @@ before proceeding to Requirement/Processing.
 
 from nicegui import ui
 from ui.widgets.cards import section_header, metric_card, empty_state
-from ui.shared import preview_svc, preview_ctrl
+from ui.shared import preview_svc, preview_ctrl, navigate_to
 from ui.workspaces.canonical.workspace import navigate_canonical
 
 from ui.widgets.preview.pipeline_widget import render_pipeline
@@ -65,6 +65,16 @@ def render():
         on_reject=ctrl.reject,
         on_back=navigate_canonical,
     )
+
+    # ── Actions ───────────────────────────────────────────────
+    ui.space().classes("h-4")
+    with ui.row().classes("w-full items-center justify-between p-4 bg-gray-50 rounded-lg"):
+        ui.label("Actions").classes("text-lg font-semibold")
+        with ui.row().classes("gap-2"):
+            ui.button("Back to Mapping", icon="arrow_back",
+                      on_click=navigate_canonical).props("flat")
+            ui.button("Continue to Planning", icon="arrow_forward", color="primary",
+                      on_click=lambda: navigate_to("requirement")).props("flat")
 
 
 # ── Section: Business Statistics ───────────────────────────────

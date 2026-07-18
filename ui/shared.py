@@ -27,6 +27,8 @@ from ui.services.canonical_service import CanonicalService
 from ui.controllers.canonical_controller import CanonicalController
 from ui.services.preview_service import PreviewService
 from ui.controllers.preview_controller import PreviewController
+from ui.services.requirement_service import RequirementService
+from ui.controllers.requirement_controller import RequirementController
 
 
 # --- Lazy-initialized singletons ---
@@ -56,6 +58,7 @@ _theme_svc: Optional[ThemeService] = None
 _detection_svc: Optional[DetectionService] = None
 _canonical_svc: Optional[CanonicalService] = None
 _preview_svc: Optional[PreviewService] = None
+_req_svc: Optional[RequirementService] = None
 
 _session_ctrl: Optional[SessionController] = None
 _nav_ctrl: Optional[NavigationController] = None
@@ -65,6 +68,7 @@ _conn_ctrl: Optional[ConnectionController] = None
 _detection_ctrl: Optional[DetectionController] = None
 _canonical_ctrl: Optional[CanonicalController] = None
 _preview_ctrl: Optional[PreviewController] = None
+_req_ctrl: Optional[RequirementController] = None
 
 
 def init_all(with_persistence: bool = True) -> None:
@@ -75,6 +79,7 @@ def init_all(with_persistence: bool = True) -> None:
     global _detection_svc, _detection_ctrl
     global _canonical_svc, _canonical_ctrl
     global _preview_svc, _preview_ctrl
+    global _req_svc, _req_ctrl
 
     _context = WorkspaceContext()
     _storage = StorageService()
@@ -104,6 +109,8 @@ def init_all(with_persistence: bool = True) -> None:
     _canonical_ctrl = CanonicalController(_canonical_svc, _notify_svc)
     _preview_svc = PreviewService(_canonical_svc)
     _preview_ctrl = PreviewController(_preview_svc, _notify_svc)
+    _req_svc = RequirementService(_context)
+    _req_ctrl = RequirementController(_req_svc, _notify_svc)
 
     # Update session service theme from the context
     is_dark = _context.theme == "dark" if _context else False
@@ -190,3 +197,11 @@ def preview_svc() -> PreviewService:
 def preview_ctrl() -> PreviewController:
     assert _preview_ctrl is not None
     return _preview_ctrl
+
+def req_svc() -> RequirementService:
+    assert _req_svc is not None
+    return _req_svc
+
+def req_ctrl() -> RequirementController:
+    assert _req_ctrl is not None
+    return _req_ctrl

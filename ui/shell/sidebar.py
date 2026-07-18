@@ -5,7 +5,7 @@ from ui.controllers.navigation_controller import NavigationController
 
 
 FUNCTIONAL_WORKSPACES = {
-    "home", "projects", "connection", "detection", "canonical", "preview",
+    "home", "projects", "connection", "detection", "canonical", "preview", "requirement",
 }
 
 
