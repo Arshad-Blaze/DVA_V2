@@ -4,6 +4,11 @@ from nicegui import ui
 from ui.controllers.navigation_controller import NavigationController
 
 
+FUNCTIONAL_WORKSPACES = {
+    "home", "projects", "connection", "detection",
+}
+
+
 NAV_ITEMS = [
     ("", [
         ("home", "Home", "home"),
@@ -36,14 +41,14 @@ def create_sidebar(nav_ctrl: NavigationController, on_navigate) -> None:
             nav_ctrl.render_section(section_title)
         for ws_id, label, icon in items:
             is_active = nav_ctrl._nav.active == ws_id
-            disabled = ws_id not in ("home",) if section_title else False
+            disabled = ws_id not in FUNCTIONAL_WORKSPACES
             item = {
                 "id": ws_id,
                 "label": label,
                 "icon": icon,
                 "section": section_title,
             }
-            nav_ctrl.register_workspace(ws_id, label, icon, section_title, disabled=False)
+            nav_ctrl.register_workspace(ws_id, label, icon, section_title, disabled=disabled)
             nav_ctrl.render_nav_item(
                 item, is_active,
                 lambda w=ws_id: on_navigate(w),

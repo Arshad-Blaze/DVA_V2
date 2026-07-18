@@ -21,6 +21,8 @@ from ui.services.persistence_service import PersistenceService
 from ui.services.storage_service import StorageService
 from ui.services.migration_service import MigrationService
 from ui.services.workspace_context import WorkspaceContext
+from ui.services.detection_service import DetectionService
+from ui.controllers.detection_controller import DetectionController
 
 
 # --- Lazy-initialized singletons ---
@@ -36,12 +38,14 @@ _conn_svc: Optional[ConnectionService] = None
 _nav_svc: Optional[NavigationService] = None
 _notify_svc: Optional[NotificationService] = None
 _theme_svc: Optional[ThemeService] = None
+_detection_svc: Optional[DetectionService] = None
 
 _session_ctrl: Optional[SessionController] = None
 _nav_ctrl: Optional[NavigationController] = None
 _ws_ctrl: Optional[WorkspaceController] = None
 _project_ctrl: Optional[ProjectController] = None
 _conn_ctrl: Optional[ConnectionController] = None
+_detection_ctrl: Optional[DetectionController] = None
 
 
 def init_all(with_persistence: bool = True) -> None:
@@ -49,6 +53,7 @@ def init_all(with_persistence: bool = True) -> None:
     global _context, _storage, _migration, _persistence
     global _session_svc, _project_svc, _conn_svc, _nav_svc, _notify_svc, _theme_svc
     global _session_ctrl, _nav_ctrl, _ws_ctrl, _project_ctrl, _conn_ctrl
+    global _detection_svc, _detection_ctrl
 
     _context = WorkspaceContext()
     _storage = StorageService()
@@ -72,6 +77,8 @@ def init_all(with_persistence: bool = True) -> None:
     _ws_ctrl = WorkspaceController(_session_svc, _nav_svc)
     _project_ctrl = ProjectController(_project_svc, _notify_svc)
     _conn_ctrl = ConnectionController(_conn_svc, _notify_svc)
+    _detection_svc = DetectionService(_context)
+    _detection_ctrl = DetectionController(_detection_svc, _notify_svc)
 
     # Update session service theme from the context
     is_dark = _context.theme == "dark" if _context else False
@@ -134,3 +141,11 @@ def project_ctrl() -> ProjectController:
 def conn_ctrl() -> ConnectionController:
     assert _conn_ctrl is not None
     return _conn_ctrl
+
+def detection_svc() -> DetectionService:
+    assert _detection_svc is not None
+    return _detection_svc
+
+def detection_ctrl() -> DetectionController:
+    assert _detection_ctrl is not None
+    return _detection_ctrl
