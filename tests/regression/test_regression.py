@@ -63,10 +63,12 @@ class TestCoreExportsComplete:
         from dav_platform.core import (
             ProcessingResult, ValidationResult, ValidationIssue,
             ValidationSeverity, OutputFormat, OutputArtifacts, OutputConfig,
+            FlushResult, CleanupSummary, ExecutionMetrics, LifecycleSummary, FlushConfig,
         )
         assert all(t is not None for t in [
             ProcessingResult, ValidationResult, ValidationIssue,
             ValidationSeverity, OutputFormat, OutputArtifacts, OutputConfig,
+            FlushResult, CleanupSummary, ExecutionMetrics, LifecycleSummary, FlushConfig,
         ])
 
 

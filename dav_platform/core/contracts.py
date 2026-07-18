@@ -831,3 +831,80 @@ class OutputConfig:
     max_top_stores: int = 5
     max_bottom_stores: int = 5
     metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+# ============================================================================
+# Flush Layer Contracts
+# ============================================================================
+
+
+@dataclass
+class CleanupSummary:
+    """Summary of cleanup actions performed."""
+    files_deleted: int = 0
+    connections_closed: int = 0
+    caches_cleared: int = 0
+    sessions_reset: int = 0
+    memory_released: bool = False
+    warnings: List[str] = field(default_factory=list)
+    errors: List[str] = field(default_factory=list)
+    details: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class ExecutionMetrics:
+    """Metrics collected during execution."""
+    total_execution_time_seconds: float = 0.0
+    layer_timings: Dict[str, float] = field(default_factory=dict)
+    rows_processed: int = 0
+    files_processed: int = 0
+    memory_usage_mb: float = 0.0
+    peak_memory_mb: float = 0.0
+    chunk_count: int = 0
+    export_count: int = 0
+    validation_rules_passed: int = 0
+    validation_rules_failed: int = 0
+    retry_count: int = 0
+    success_rate: float = 100.0
+    failure_rate: float = 0.0
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class FlushResult:
+    """Result of the Flush layer execution."""
+    success: bool = True
+    cleanup: Optional[CleanupSummary] = None
+    metrics: Optional[ExecutionMetrics] = None
+    summary: Optional["LifecycleSummary"] = None
+    warnings: List[str] = field(default_factory=list)
+    errors: List[str] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class LifecycleSummary:
+    """Final execution lifecycle summary."""
+    execution_status: str = ""  # success, partial, failed
+    total_duration_seconds: float = 0.0
+    warnings: List[str] = field(default_factory=list)
+    errors: List[str] = field(default_factory=list)
+    generated_outputs: List[str] = field(default_factory=list)
+    cleanup_status: str = ""  # complete, partial, skipped
+    resource_release_summary: str = ""
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class FlushConfig:
+    """Configuration for the Flush layer."""
+    retain_temp_files: bool = False
+    retain_logs: bool = False
+    retain_caches: bool = False
+    delete_exports: bool = False
+    archive_reports: bool = False
+    verbose: bool = False
+    dry_run: bool = False
+    temp_directories: List[str] = field(default_factory=list)
+    cache_keys: List[str] = field(default_factory=list)
+    metadata: Dict[str, Any] = field(default_factory=dict)
