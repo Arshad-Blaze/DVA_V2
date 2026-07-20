@@ -11,16 +11,50 @@ from pathlib import Path
 
 class ConnectionType:
     LOCAL = "local"
-    NETWORK = "network"
-    DATABASE = "database"
-    CLOUD = "cloud"
+    SSH = "ssh"
+    MFT = "mft"
 
 
 CONNECTION_TYPES = {
     ConnectionType.LOCAL: {"label": "Local Filesystem", "icon": "folder", "color": "primary"},
-    ConnectionType.NETWORK: {"label": "Network Share", "icon": "lan", "color": "info"},
-    ConnectionType.DATABASE: {"label": "Database", "icon": "storage", "color": "warning"},
-    ConnectionType.CLOUD: {"label": "Cloud Storage", "icon": "cloud", "color": "positive"},
+    ConnectionType.SSH: {"label": "SSH Connection", "icon": "terminal", "color": "info"},
+    ConnectionType.MFT: {"label": "MFT Connection", "icon": "sync_alt", "color": "warning"},
+}
+
+CONNECTION_FORMS = {
+    ConnectionType.LOCAL: {
+        "fields": [
+            {"key": "directory", "label": "Directory", "type": "directory", "required": True},
+            {"key": "description", "label": "Description", "type": "text", "required": False},
+        ],
+        "actions": ["browse", "test"],
+    },
+    ConnectionType.SSH: {
+        "fields": [
+            {"key": "host", "label": "Host", "type": "text", "required": True},
+            {"key": "port", "label": "Port", "type": "number", "required": True, "default": 22},
+            {"key": "username", "label": "Username", "type": "text", "required": True},
+            {"key": "password", "label": "Password", "type": "password", "required": False},
+            {"key": "private_key", "label": "Private Key", "type": "file", "required": False},
+            {"key": "remote_directory", "label": "Remote Directory", "type": "text", "required": False},
+            {"key": "description", "label": "Description", "type": "text", "required": False},
+        ],
+        "actions": ["test"],
+    },
+    ConnectionType.MFT: {
+        "fields": [
+            {"key": "server", "label": "Server", "type": "text", "required": True},
+            {"key": "port", "label": "Port", "type": "number", "required": True, "default": 21},
+            {"key": "protocol", "label": "Protocol", "type": "select", "required": True,
+             "options": ["SFTP", "FTPS", "FTPES", "HTTPS"]},
+            {"key": "username", "label": "Username", "type": "text", "required": True},
+            {"key": "password", "label": "Password", "type": "password", "required": True},
+            {"key": "remote_directory", "label": "Remote Directory", "type": "text", "required": False},
+            {"key": "polling_interval", "label": "Polling Interval (min)", "type": "number", "required": False, "default": 5},
+            {"key": "description", "label": "Description", "type": "text", "required": False},
+        ],
+        "actions": ["test"],
+    },
 }
 
 
@@ -38,7 +72,6 @@ class ConnectionService:
         self._persistence = persistence
         self._context = context
 
-        # Load from persistence if available
         if self._persistence:
             loaded = self._persistence.load_connections()
             for c in loaded:
@@ -46,42 +79,8 @@ class ConnectionService:
                 if cid:
                     self._connections[cid] = c
 
-        # Seed demo connections only if no persisted data
-        if not self._connections:
-            self._seed_demo_connections()
-
-    def _seed_demo_connections(self) -> None:
-        demos = [
-            {
-                "name": "Production Data",
-                "conn_type": ConnectionType.LOCAL,
-                "path": "/data/production",
-                "description": "Production data lake connection",
-            },
-            {
-                "name": "Staging Files",
-                "conn_type": ConnectionType.LOCAL,
-                "path": "/data/staging",
-                "description": "Staging area for incoming files",
-            },
-            {
-                "name": "Archive Storage",
-                "conn_type": ConnectionType.NETWORK,
-                "path": "//nas/archive",
-                "description": "Network attached archive storage",
-            },
-        ]
-        for c in demos:
-            cid = c["name"].lower().replace(" ", "_")
-            c["id"] = cid
-            c["status"] = "connected"
-            c["connected_at"] = datetime.now()
-            c["file_count"] = 0
-            self._connections[cid] = c
-        self._persist()
-
     def add_connection(self, name: str, conn_type: str = ConnectionType.LOCAL,
-                       path: str = "", description: str = "") -> Dict[str, Any]:
+                       path: str = "", description: str = "", **kwargs) -> Dict[str, Any]:
         cid = name.lower().replace(" ", "_")
         connection = {
             "id": cid,
@@ -93,6 +92,31 @@ class ConnectionService:
             "connected_at": None,
             "file_count": 0,
         }
+        connection.update(kwargs)
+        self._connections[cid] = connection
+        self._persist()
+        return connection
+
+    def update_connection(self, connection_id: str, **kwargs) -> Optional[Dict[str, Any]]:
+        conn = self._connections.get(connection_id)
+        if not conn:
+            return None
+        conn.update(kwargs)
+        self._persist()
+        return conn
+
+    def duplicate_connection(self, connection_id: str) -> Optional[Dict[str, Any]]:
+        original = self._connections.get(connection_id)
+        if not original:
+            return None
+        new_name = f"{original['name']} (Copy)"
+        cid = new_name.lower().replace(" ", "_")
+        connection = dict(original)
+        connection["id"] = cid
+        connection["name"] = new_name
+        connection["status"] = "disconnected"
+        connection["connected_at"] = None
+        connection["file_count"] = 0
         self._connections[cid] = connection
         self._persist()
         return connection
@@ -142,6 +166,9 @@ class ConnectionService:
 
     def get_type_info(self, conn_type: str) -> Dict[str, str]:
         return CONNECTION_TYPES.get(conn_type, CONNECTION_TYPES[ConnectionType.LOCAL])
+
+    def get_form_config(self, conn_type: str) -> Dict[str, Any]:
+        return CONNECTION_FORMS.get(conn_type, CONNECTION_FORMS[ConnectionType.LOCAL])
 
     @property
     def current_connection(self) -> Optional[Dict[str, Any]]:

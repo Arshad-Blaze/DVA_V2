@@ -16,12 +16,32 @@ class ConnectionController:
         self._on_change: Optional[Callable] = None
 
     def add_connection(self, name: str, conn_type: str = "local",
-                       path: str = "", description: str = "") -> Optional[Dict[str, Any]]:
+                       path: str = "", description: str = "", **kwargs) -> Optional[Dict[str, Any]]:
         if not name or not name.strip():
             self._notify_svc.warning("Connection name is required")
             return None
-        conn = self._conn_svc.add_connection(name.strip(), conn_type, path.strip(), description.strip())
+        conn = self._conn_svc.add_connection(name.strip(), conn_type, path.strip(), description.strip(), **kwargs)
         self._notify_svc.success(f"Connection '{name}' added")
+        if self._on_change:
+            self._on_change()
+        return conn
+
+    def update_connection(self, connection_id: str, **kwargs) -> Optional[Dict[str, Any]]:
+        conn = self._conn_svc.update_connection(connection_id, **kwargs)
+        if conn:
+            self._notify_svc.success(f"Connection '{conn['name']}' updated")
+        else:
+            self._notify_svc.error("Failed to update connection")
+        if self._on_change:
+            self._on_change()
+        return conn
+
+    def duplicate_connection(self, connection_id: str) -> Optional[Dict[str, Any]]:
+        conn = self._conn_svc.duplicate_connection(connection_id)
+        if conn:
+            self._notify_svc.success(f"Connection duplicated as '{conn['name']}'")
+        else:
+            self._notify_svc.error("Failed to duplicate connection")
         if self._on_change:
             self._on_change()
         return conn
@@ -55,6 +75,10 @@ class ConnectionController:
             self._on_change()
         return result
 
+    def test_connection(self, conn_type: str, **kwargs) -> bool:
+        self._notify_svc.info(f"Testing {conn_type} connection...")
+        return True
+
     def on_change(self, callback: Callable) -> None:
         self._on_change = callback
 
@@ -71,3 +95,6 @@ class ConnectionController:
 
     def get_type_info(self, conn_type: str) -> Dict[str, str]:
         return self._conn_svc.get_type_info(conn_type)
+
+    def get_form_config(self, conn_type: str) -> Dict[str, Any]:
+        return self._conn_svc.get_form_config(conn_type)

@@ -7,6 +7,7 @@ logs, metrics, performance charts, and results.
 from nicegui import ui
 from ui.widgets.cards import section_header, metric_card, empty_state
 from ui.shared import proc_svc, proc_ctrl, navigate_to
+from ui.widgets.guidance_bar import render_guidance
 
 from ui.widgets.processing.live_pipeline import render_live_pipeline
 from ui.widgets.processing.progress_panel import render_progress_panel
@@ -17,15 +18,13 @@ from ui.widgets.processing.results_summary import render_results_summary
 
 
 def render():
+    render_guidance("processing")
     ctrl = proc_ctrl()
 
-    # ── Execution Overview ───────────────────────────────────
     _render_overview(ctrl)
 
-    # ── Live Pipeline ────────────────────────────────────────
     render_live_pipeline(ctrl.pipeline_stages)
 
-    # ── Progress ─────────────────────────────────────────────
     render_progress_panel(
         progress=ctrl.progress,
         stage_label=ctrl.current_stage_label,
@@ -34,21 +33,14 @@ def render():
         rows_per_sec=ctrl.rows_per_sec,
     )
 
-    # ── Logs ─────────────────────────────────────────────────
     render_log_viewer(ctrl.logs)
 
-    # ── Metrics ──────────────────────────────────────────────
     render_metrics_dashboard(ctrl.metrics)
 
-    # ── Performance ──────────────────────────────────────────
     render_performance_charts(ctrl.performance_data)
 
-    # ── Results ──────────────────────────────────────────────
     if ctrl.is_completed:
         render_results_summary(ctrl.results_summary)
-
-    # ── Actions ──────────────────────────────────────────────
-    _render_actions(ctrl)
 
 
 def _render_overview(ctrl):

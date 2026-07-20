@@ -6,6 +6,7 @@ Reviews, configures, and approves execution plan.
 from nicegui import ui
 from ui.widgets.cards import section_header, metric_card, empty_state
 from ui.shared import op_svc, op_ctrl, navigate_to
+from ui.widgets.guidance_bar import render_guidance
 
 from ui.widgets.operation.pipeline_viz import render_pipeline_viz
 from ui.widgets.operation.execution_config import render_execution_config
@@ -16,6 +17,7 @@ from dav_platform.core.contracts import ExecutionStep
 
 
 def render():
+    render_guidance("operation")
     ctrl = op_ctrl()
 
     # ── Execution Summary ────────────────────────────────────

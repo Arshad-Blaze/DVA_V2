@@ -8,6 +8,7 @@ suggested actions, timeline, and approval workflow.
 from nicegui import ui
 from ui.widgets.cards import section_header, metric_card, empty_state
 from ui.shared import val_svc, val_ctrl, navigate_to
+from ui.widgets.guidance_bar import render_guidance
 
 from ui.widgets.validation.execution_summary import render_execution_summary
 from ui.widgets.validation.score_card import render_validation_dashboard
@@ -22,6 +23,7 @@ from ui.widgets.validation.approval_card import render_approval_card
 
 
 def render():
+    render_guidance("validation")
     ctrl = val_ctrl()
 
     # ── Execution Summary ────────────────────────────────────

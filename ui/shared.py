@@ -39,6 +39,10 @@ from ui.services.reports_service import ReportsService
 from ui.controllers.reports_controller import ReportsController
 from ui.services.admin_service import AdminService
 from ui.controllers.admin_controller import AdminController
+from ui.services.welcome_service import WelcomeService
+from ui.services.demo_service import DemoService
+from ui.services.guidance_service import GuidanceService
+from ui.services.performance_service import PerformanceService
 
 
 # --- Lazy-initialized singletons ---
@@ -89,6 +93,10 @@ _rep_svc: Optional[ReportsService] = None
 _rep_ctrl: Optional[ReportsController] = None
 _adm_svc: Optional[AdminService] = None
 _adm_ctrl: Optional[AdminController] = None
+_guidance_svc: Optional[GuidanceService] = None
+_welcome_svc: Optional[WelcomeService] = None
+_demo_svc: Optional[DemoService] = None
+_perf_svc: Optional[PerformanceService] = None
 
 
 def init_all(with_persistence: bool = True) -> None:
@@ -105,7 +113,11 @@ def init_all(with_persistence: bool = True) -> None:
     global _val_svc, _val_ctrl
     global _rep_svc, _rep_ctrl
     global _adm_svc, _adm_ctrl
+    global _guidance_svc
+    global _welcome_svc, _demo_svc
+    global _perf_svc
 
+    _perf_svc = PerformanceService()
     _context = WorkspaceContext()
     _storage = StorageService()
     _migration = MigrationService(_storage)
@@ -146,11 +158,18 @@ def init_all(with_persistence: bool = True) -> None:
     _rep_ctrl = ReportsController(_rep_svc, _notify_svc)
     _adm_svc = AdminService(_context)
     _adm_ctrl = AdminController(_adm_svc, _notify_svc)
+    _guidance_svc = GuidanceService()
+    _welcome_svc = WelcomeService()
+    _demo_svc = DemoService(
+        project_service=_project_svc,
+        connection_service=_conn_svc,
+        detection_service=_detection_svc,
+        canonical_service=_canonical_svc,
+        preview_service=_preview_svc,
+    )
 
-    # Update session service theme from the context
-    is_dark = _context.theme == "dark" if _context else False
-    if is_dark and _theme_svc:
-        _theme_svc.set_dark(True)
+    if _context and _theme_svc:
+        _theme_svc.set_theme(_context.theme)
 
 
 def context() -> WorkspaceContext:
@@ -283,3 +302,19 @@ def admin_svc() -> AdminService:
 def admin_ctrl() -> AdminController:
     assert _adm_ctrl is not None
     return _adm_ctrl
+
+def guidance_svc() -> GuidanceService:
+    assert _guidance_svc is not None
+    return _guidance_svc
+
+def welcome_svc() -> WelcomeService:
+    assert _welcome_svc is not None
+    return _welcome_svc
+
+def demo_svc() -> DemoService:
+    assert _demo_svc is not None
+    return _demo_svc
+
+def perf_svc() -> PerformanceService:
+    assert _perf_svc is not None
+    return _perf_svc

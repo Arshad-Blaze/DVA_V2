@@ -6,6 +6,7 @@ storage, settings, maintenance, about, and actions.
 
 from nicegui import ui
 from ui.shared import admin_ctrl, navigate_to
+from ui.widgets.guidance_bar import render_guidance
 from ui.widgets.admin.health_card import render_health_card
 from ui.widgets.admin.history_grid import render_project_history, render_execution_history
 from ui.widgets.admin.log_viewer import render_log_viewer
@@ -18,6 +19,7 @@ from ui.widgets.admin.status_bar import render_admin_status_bar
 
 
 def render():
+    render_guidance("administration")
     ctrl = admin_ctrl()
 
     # ── Status Bar ───────────────────────────────────────────

@@ -11,52 +11,62 @@ from ui.widgets.detection import (
     warning_banner, explanation_panel, timeline_view,
     raw_preview_viewer, connection_summary_card,
 )
-from ui.shared import detection_svc, detection_ctrl
+from ui.shared import detection_svc, detection_ctrl, conn_svc
+from ui.widgets.guidance_bar import render_guidance
 
 
-SAMPLE_LINES = [
-    "Store,Date,UPC,Description,Category,Units,Price,Sales,Promotion",
-    "S001,2026-01-15,490123456789,Organic Whole Milk,Dairy,2,4.99,9.98,No",
-    "S001,2026-01-15,490123456790,Sourdough Bread,Bakery,1,5.49,5.49,No",
-    "S002,2026-01-15,490123456791,Free Range Eggs,Dairy,3,6.99,20.97,No",
-    "S001,2026-01-16,490123456792,Avocado,Produce,5,1.99,9.95,Yes",
-    "S003,2026-01-16,490123456793, Almond Milk,Dairy,2,4.49,8.98,No",
-    "S002,2026-01-16,490123456794,Salsa Verde,International,1,3.99,3.99,No",
-    "S001,2026-01-17,490123456795,Chicken Breast,Meat,2,8.99,17.98,No",
-    "S003,2026-01-17,490123456796,Black Beans,Canned,4,1.49,5.96,Yes",
-    "S002,2026-01-17,490123456797,Olive Oil,Condiments,1,12.99,12.99,No",
-]
+def _get_connection_files():
+    conn = conn_svc()
+    current = conn.current_connection
+    if current:
+        path = current.get("path", "/")
+        return [e for e in conn.browse_directory(path) if not e["is_dir"]]
+    return []
 
 
 def _render_connection_summary():
     section_header("Connection Summary")
     svc = detection_svc()
+    conn = conn_svc()
+    current = conn.current_connection
 
     with ui.card().classes("w-full p-4"):
-        with ui.row().classes("w-full gap-6"):
-            with ui.column().classes("gap-1"):
-                connection_summary_card("Project", "Retail Sales Q2")
-                connection_summary_card("Connection", "Production Data")
-                connection_summary_card("Directory", "/data/production")
-            with ui.column().classes("gap-1"):
-                connection_summary_card("Connection Type", "Local Filesystem", "folder")
-                connection_summary_card("File Count", "3 files")
-                connection_summary_card("Total Size", "12.4 MB")
+        if not current:
+            ui.label("No active connection. Go to Connection workspace first.").classes("text-sm text-gray-500")
+            return
+
         with ui.row().classes("items-center gap-2 mt-2"):
-            ui.label("Selected File:").classes("text-sm text-gray-500")
-            for f in svc.selected_files:
-                is_active = f == svc.selected_file
-                ui.button(f, color="primary" if is_active else "grey",
-                          on_click=lambda fn=f: detection_ctrl().switch_file(fn)).props("flat dense size=sm")
+            ui.label("Connection:").classes("text-sm text-gray-500")
+            ui.label(current.get("name", "Unknown")).classes("text-sm font-semibold")
+
+        files = _get_connection_files()
+        if not files:
+            ui.label("No files found in connection directory.").classes("text-sm text-gray-400 mt-2")
+            return
+
+        with ui.row().classes("items-center gap-2 mt-2"):
+            ui.label("Files:").classes("text-sm text-gray-500")
+            for f in files:
+                is_active = f["name"] == svc.selected_file
+                ui.button(f["name"], color="primary" if is_active else "grey",
+                          on_click=lambda fn=f["name"]: detection_ctrl().switch_file(fn)).props("flat dense size=sm").tooltip("Select file for detection")
+
+        selected = svc.selected_file or "None"
+        ui.label(f"Selected: {selected}").classes("text-sm text-gray-500 mt-1")
 
 
 def _render_raw_file_preview():
+    svc = detection_svc()
     section_header("Raw File Preview")
     with ui.card().classes("w-full p-4"):
         with ui.row().classes("items-center justify-between w-full mb-2"):
-            ui.label(f"File: {detection_svc().selected_file}").classes("text-sm font-medium")
-            ui.label(f"Encoding: UTF-8 | {len(SAMPLE_LINES)} lines shown").classes("text-xs text-gray-400")
-        raw_preview_viewer(SAMPLE_LINES)
+            ui.label(f"File: {svc.selected_file or 'None'}").classes("text-sm font-medium")
+        lines = []
+        if svc.result and svc.result.raw_preview is not None:
+            import polars as pl
+            df = svc.result.raw_preview
+            lines = [",".join(str(v) for v in row) for row in df.iter_rows()]
+        raw_preview_viewer(lines)
 
 
 def _render_detection_results():
@@ -189,16 +199,17 @@ def _render_actions():
 
         with ui.row().classes("items-center gap-2"):
             ui.button("Retry Detection", icon="refresh",
-                      on_click=lambda: detection_ctrl().run_detection()).props("flat")
+                      on_click=lambda: detection_ctrl().run_detection()).props("flat").tooltip("Re-run automatic detection")
             ui.button("Validate", icon="check_circle",
-                      on_click=lambda: detection_ctrl().validate_detection()).props("outline")
+                      on_click=lambda: detection_ctrl().validate_detection()).props("outline").tooltip("Validate detection results")
             ui.button("Accept", icon="verified", color="positive",
-                      on_click=lambda: detection_ctrl().accept_detection())
+                      on_click=lambda: detection_ctrl().accept_detection()).tooltip("Accept detection results")
             ui.button("Continue to Canonical", icon="arrow_forward", color="primary",
-                      ).props("flat")
+                      ).props("flat").tooltip("Proceed to Canonical Mapping")
 
 
 def render():
+    render_guidance("detection")
     _render_connection_summary()
     ui.space().classes("h-4")
     _render_raw_file_preview()

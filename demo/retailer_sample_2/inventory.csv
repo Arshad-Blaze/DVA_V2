@@ -1,0 +1,11 @@
+Warehouse,ItemCode,Description,Category,OnHand,MinStock,MaxStock,UnitCost,LastReceived
+WH01,INV001,Widget A,Hardware,450,100,500,2.50,2026-01-10
+WH01,INV002,Widget B,Hardware,120,50,300,3.75,2026-01-12
+WH01,INV003,Gadget X,Electronics,85,30,200,15.00,2026-01-08
+WH02,INV004,Gadget Y,Electronics,200,50,250,22.50,2026-01-14
+WH02,INV005,Component Z,Hardware,600,200,800,1.25,2026-01-05
+WH02,INV006,Assembly Kit,Hardware,45,20,100,45.00,2026-01-11
+WH03,INV007,Cleaning Solvent,Chemicals,90,40,150,8.00,2026-01-09
+WH03,INV008,Safety Gloves,Safety,300,100,500,3.00,2026-01-13
+WH03,INV009,Protective Goggles,Safety,75,30,120,12.50,2026-01-07
+WH01,INV010,Lubricant Oil,Chemicals,180,50,250,6.75,2026-01-15

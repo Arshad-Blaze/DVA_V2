@@ -102,6 +102,8 @@ def serialize_context(context: Dict[str, Any]) -> Dict[str, Any]:
         "theme": context.get("theme", "light"),
         "sidebar_collapsed": context.get("sidebar_collapsed", False),
         "inspector_visible": context.get("inspector_visible", True),
+        "window_size": context.get("window_size", ""),
+        "splitter_position": context.get("splitter_position", 300),
         "version": 1,
     }
 
@@ -115,6 +117,8 @@ def deserialize_context(data: Dict[str, Any]) -> Dict[str, Any]:
         "theme": data.get("theme", "light"),
         "sidebar_collapsed": data.get("sidebar_collapsed", False),
         "inspector_visible": data.get("inspector_visible", True),
+        "window_size": data.get("window_size", ""),
+        "splitter_position": data.get("splitter_position", 300),
         "version": data.get("version", 1),
     }
 

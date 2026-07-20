@@ -6,6 +6,7 @@ charts, drill down, export center, and report history.
 
 from nicegui import ui
 from ui.shared import reports_ctrl, navigate_to
+from ui.widgets.guidance_bar import render_guidance
 from ui.widgets.reports.executive_dashboard import render_executive_dashboard
 from ui.widgets.reports.business_kpis import render_business_kpis
 from ui.widgets.reports.validation_kpis import render_validation_kpis
@@ -19,6 +20,7 @@ from ui.widgets.reports.status_bar import render_status_bar
 
 
 def render():
+    render_guidance("reports")
     ctrl = reports_ctrl()
 
     # ── Executive Dashboard ──────────────────────────────────

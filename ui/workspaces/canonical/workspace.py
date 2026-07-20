@@ -7,7 +7,8 @@ from typing import Any, Dict, List, Optional
 
 from nicegui import ui
 from ui.widgets.cards import section_header, info_card, metric_card, status_badge, empty_state
-from ui.shared import canonical_svc, canonical_ctrl, navigate_to
+from ui.shared import canonical_svc, canonical_ctrl, detection_svc, navigate_to
+from ui.widgets.guidance_bar import render_guidance
 
 from dav_platform.core.contracts import CANONICAL_COLUMNS, ColumnMapping
 
@@ -17,16 +18,28 @@ from dav_platform.core.contracts import CANONICAL_COLUMNS, ColumnMapping
 
 def _render_detection_summary():
     section_header("Detection Summary")
+    det_svc = detection_svc()
+    r = det_svc.result
     with ui.card().classes("w-full p-4"):
         with ui.grid(columns=4).classes("w-full gap-4"):
-            _summary_item("Format", "Delimited CSV")
-            _summary_item("Delimiter", "Comma ','")
-            _summary_item("Encoding", "UTF-8")
-            _summary_item("Header", "Row 1")
-            _summary_item("Record Types", "Single-line")
-            _summary_item("Layout", "9 columns")
-            _summary_item("Confidence", "95%")
-            _summary_item("Accepted", "2026-07-18 22:51")
+            if r:
+                _summary_item("Format", r.file_type.value.title() if r.file_type else "Unknown")
+                _summary_item("Delimiter", f"Comma '{r.delimiter}'" if r.delimiter else "None")
+                _summary_item("Encoding", r.encoding.upper())
+                _summary_item("Header", f"Row {r.header_start_line + 1}" if r.has_header else "None")
+                _summary_item("Record Types", "Single-line" if not r.is_multiline else "Multi-line")
+                _summary_item("Layout", f"{len(r.columns or [])} columns")
+                _summary_item("Confidence", f"{r.confidence * 100:.0f}%")
+                _summary_item("Accepted", "Yes" if det_svc.is_accepted else "No")
+            else:
+                _summary_item("Format", "—")
+                _summary_item("Delimiter", "—")
+                _summary_item("Encoding", "—")
+                _summary_item("Header", "—")
+                _summary_item("Record Types", "—")
+                _summary_item("Layout", "—")
+                _summary_item("Confidence", "—")
+                _summary_item("Accepted", "—")
 
 # ──────────────────────────────────────────────────────────────────
 # Section 2 — Physical Schema Explorer
@@ -62,11 +75,11 @@ def _render_physical_schema():
                 if ignored:
                     ui.button(icon="visibility", on_click=lambda n=c["name"]: (
                         canonical_ctrl().unignore_column(n)
-                    )).props("flat round dense size=sm")
+                    )).props("flat round dense size=sm").tooltip("Show column")
                 else:
                     ui.button(icon="visibility_off", on_click=lambda n=c["name"]: (
                         canonical_ctrl().ignore_column(n)
-                    )).props("flat round dense size=sm")
+                    )).props("flat round dense size=sm").tooltip("Ignore column")
 
 # ──────────────────────────────────────────────────────────────────
 # Section 3+4+5 — Business Schema Builder & Mapping Studio
@@ -200,12 +213,11 @@ def _render_mapping_confidence():
 
         with ui.card().classes("flex-1 p-4"):
             ui.label("Confidence Breakdown").classes("text-sm font-semibold mb-2")
-            _confidence_row("Store", 0.99)
-            _confidence_row("UPC", 0.99)
-            _confidence_row("Description", 0.99)
-            _confidence_row("Quantity", 0.90)
-            _confidence_row("Sales", 0.99)
-            _confidence_row("Date", 0.99)
+            svc_local = canonical_svc()
+            for field in ["store", "upc", "description", "quantity", "sales", "date"]:
+                mapping = svc_local.get_mapping(field)
+                conf = mapping.confidence if mapping else 0.0
+                _confidence_row(field.title(), conf)
 
 
 # ──────────────────────────────────────────────────────────────────
@@ -250,13 +262,13 @@ def _render_actions():
 
         with ui.row().classes("items-center gap-2"):
             ui.button("Auto Map", icon="auto_fix_high", color="primary",
-                      on_click=lambda: canonical_ctrl().auto_map())
+                      on_click=lambda: canonical_ctrl().auto_map()).tooltip("Automatically detect column mappings")
             ui.button("Clear All", icon="clear",
-                      on_click=lambda: canonical_ctrl().clear_all()).props("flat")
+                      on_click=lambda: canonical_ctrl().clear_all()).props("flat").tooltip("Clear all mappings")
             ui.button("Save Mapping", icon="save", color="positive",
-                      on_click=lambda: canonical_ctrl().accept()).props("outline")
+                      on_click=lambda: canonical_ctrl().accept()).props("outline").tooltip("Save and accept mapping")
             ui.button("Continue", icon="arrow_forward", color="primary",
-                      on_click=lambda: navigate_to("preview")).props("flat")
+                      on_click=lambda: navigate_to("preview")).props("flat").tooltip("Proceed to Business Preview")
 
     if missing:
         with ui.row().classes("items-center gap-2 mt-2"):
@@ -305,6 +317,7 @@ def _confidence_row(label: str, value: float) -> None:
 # ──────────────────────────────────────────────────────────────────
 
 def render():
+    render_guidance("canonical")
     _render_detection_summary()
     ui.space().classes("h-4")
     _render_physical_schema()

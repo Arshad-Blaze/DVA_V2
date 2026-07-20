@@ -1,48 +1,29 @@
-"""WorkspaceContext — single shared UI state object.
-
-Becomes the single source of truth for all UI session state.
-Services read from and write to this context rather than
-maintaining independent state.
-"""
-
 from typing import Any, Dict, List, Optional, Callable
 
 
 class WorkspaceContext:
-    """Central UI state shared across all services and controllers.
-
-    Never couples to backend. Never touches the filesystem.
-    """
-
     def __init__(self):
-        # Navigation
         self._current_workspace: str = "home"
         self._navigation_history: List[str] = []
 
-        # Project
         self._current_project_id: Optional[str] = None
         self._recent_projects: List[str] = []
 
-        # Connection
         self._current_connection_id: Optional[str] = None
         self._recent_connections: List[str] = []
 
-        # Preferences
         self._theme: str = "light"
         self._sidebar_collapsed: bool = False
         self._inspector_visible: bool = True
+        self._window_size: str = ""
+        self._splitter_position: int = 300
 
-        # Detection / Canonical / Execution (seeded for future use)
+        self._wizard_completed: bool = False
         self._current_detection_session: Optional[str] = None
         self._current_canonical_session: Optional[str] = None
         self._current_execution_id: Optional[str] = None
 
-        # Callbacks
         self._on_change: Optional[Callable] = None
-
-    # ------------------------------------------------------------------
-    # Workspace
-    # ------------------------------------------------------------------
 
     @property
     def current_workspace(self) -> str:
@@ -68,10 +49,6 @@ class WorkspaceContext:
             return self._navigation_history.pop()
         return None
 
-    # ------------------------------------------------------------------
-    # Project
-    # ------------------------------------------------------------------
-
     @property
     def current_project_id(self) -> Optional[str]:
         return self._current_project_id
@@ -96,10 +73,6 @@ class WorkspaceContext:
         self._recent_projects = self._recent_projects[:10]
         self._notify()
 
-    # ------------------------------------------------------------------
-    # Connection
-    # ------------------------------------------------------------------
-
     @property
     def current_connection_id(self) -> Optional[str]:
         return self._current_connection_id
@@ -123,10 +96,6 @@ class WorkspaceContext:
         self._recent_connections.insert(0, connection_id)
         self._recent_connections = self._recent_connections[:10]
         self._notify()
-
-    # ------------------------------------------------------------------
-    # Preferences / Theme
-    # ------------------------------------------------------------------
 
     @property
     def theme(self) -> str:
@@ -155,9 +124,32 @@ class WorkspaceContext:
         self._inspector_visible = value
         self._notify()
 
-    # ------------------------------------------------------------------
-    # Session state export / restore
-    # ------------------------------------------------------------------
+    @property
+    def window_size(self) -> str:
+        return self._window_size
+
+    @window_size.setter
+    def window_size(self, value: str) -> None:
+        self._window_size = value
+        self._notify()
+
+    @property
+    def splitter_position(self) -> int:
+        return self._splitter_position
+
+    @splitter_position.setter
+    def splitter_position(self, value: int) -> None:
+        self._splitter_position = value
+        self._notify()
+
+    @property
+    def wizard_completed(self) -> bool:
+        return self._wizard_completed
+
+    @wizard_completed.setter
+    def wizard_completed(self, value: bool) -> None:
+        self._wizard_completed = value
+        self._notify()
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -170,6 +162,9 @@ class WorkspaceContext:
             "theme": self._theme,
             "sidebar_collapsed": self._sidebar_collapsed,
             "inspector_visible": self._inspector_visible,
+            "window_size": self._window_size,
+            "splitter_position": self._splitter_position,
+            "wizard_completed": self._wizard_completed,
             "version": 1,
         }
 
@@ -183,10 +178,9 @@ class WorkspaceContext:
         self._theme = data.get("theme", "light")
         self._sidebar_collapsed = data.get("sidebar_collapsed", False)
         self._inspector_visible = data.get("inspector_visible", True)
-
-    # ------------------------------------------------------------------
-    # Reset
-    # ------------------------------------------------------------------
+        self._window_size = data.get("window_size", "")
+        self._splitter_position = data.get("splitter_position", 300)
+        self._wizard_completed = data.get("wizard_completed", False)
 
     def reset(self) -> None:
         self._current_workspace = "home"
@@ -198,11 +192,10 @@ class WorkspaceContext:
         self._theme = "light"
         self._sidebar_collapsed = False
         self._inspector_visible = True
+        self._window_size = ""
+        self._splitter_position = 300
+        self._wizard_completed = False
         self._notify()
-
-    # ------------------------------------------------------------------
-    # Change notification
-    # ------------------------------------------------------------------
 
     def on_change(self, callback: Callable) -> None:
         self._on_change = callback

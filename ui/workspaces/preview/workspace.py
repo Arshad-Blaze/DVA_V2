@@ -8,6 +8,7 @@ from nicegui import ui
 from ui.widgets.cards import section_header, metric_card, empty_state
 from ui.shared import preview_svc, preview_ctrl, navigate_to
 from ui.workspaces.canonical.workspace import navigate_canonical
+from ui.widgets.guidance_bar import render_guidance
 
 from ui.widgets.preview.pipeline_widget import render_pipeline
 from ui.widgets.preview.comparison_viewer import render_comparison
@@ -28,6 +29,7 @@ def set_navigation_handler(handler):
 
 
 def render():
+    render_guidance("preview")
     ctrl = preview_ctrl()
     svc = preview_svc()
 
@@ -72,9 +74,9 @@ def render():
         ui.label("Actions").classes("text-lg font-semibold")
         with ui.row().classes("gap-2"):
             ui.button("Back to Mapping", icon="arrow_back",
-                      on_click=navigate_canonical).props("flat")
+                      on_click=navigate_canonical).props("flat").tooltip("Return to Canonical Mapping")
             ui.button("Continue to Planning", icon="arrow_forward", color="primary",
-                      on_click=lambda: navigate_to("requirement")).props("flat")
+                      on_click=lambda: navigate_to("requirement")).props("flat").tooltip("Proceed to Requirement Planning")
 
 
 # ── Section: Business Statistics ───────────────────────────────

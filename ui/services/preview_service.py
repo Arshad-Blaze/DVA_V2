@@ -19,18 +19,6 @@ PIPELINE_STAGES = [
     {"id": "ready", "label": "Ready for Processing", "icon": "check_circle"},
 ]
 
-COMPARISON_ROWS_DEMO = [
-    {"physical": "Store", "sample": "S001", "business": "store", "business_sample": "S001", "conf": 0.99, "source": "Auto"},
-    {"physical": "UPC", "sample": "490123456789", "business": "upc", "business_sample": "490123456789", "conf": 0.99, "source": "Auto"},
-    {"physical": "Description", "sample": "Organic Whole Milk", "business": "description", "business_sample": "Organic Whole Milk", "conf": 0.99, "source": "Auto"},
-    {"physical": "Category", "sample": "Dairy", "business": "category", "business_sample": "Dairy", "conf": 0.95, "source": "Auto"},
-    {"physical": "Units", "sample": "2", "business": "quantity", "business_sample": "2", "conf": 0.90, "source": "Auto"},
-    {"physical": "Price", "sample": "4.99", "business": "price", "business_sample": "4.99", "conf": 0.99, "source": "Auto"},
-    {"physical": "Sales", "sample": "9.98", "business": "sales", "business_sample": "9.98", "conf": 0.99, "source": "Auto"},
-    {"physical": "Date", "sample": "2026-01-15", "business": "date", "business_sample": "2026-01-15", "conf": 0.99, "source": "Auto"},
-    {"physical": "Promotion", "sample": "No", "business": "promotion", "business_sample": "No", "conf": 0.85, "source": "Auto"},
-]
-
 PREVIEW_COLUMNS = [
     {"name": "store", "label": "Store", "field": "store", "align": "left"},
     {"name": "upc", "label": "UPC", "field": "upc", "align": "left"},
@@ -45,67 +33,6 @@ PREVIEW_COLUMNS = [
     {"name": "date", "label": "Date", "field": "date", "align": "left"},
 ]
 
-PREVIEW_ROWS_DEMO = [
-    {"store": "S001", "upc": "490123456789", "description": "Organic Whole Milk", "quantity": 2, "uom": "each", "sales": 9.98, "price": 4.99, "category": "Dairy", "brand": "Organic Valley", "department": "Dairy", "date": "2026-01-15"},
-    {"store": "S001", "upc": "490123456790", "description": "Sourdough Bread", "quantity": 1, "uom": "each", "sales": 5.49, "price": 5.49, "category": "Bakery", "brand": "Artisan Bakes", "department": "Bakery", "date": "2026-01-15"},
-    {"store": "S001", "upc": "490123456791", "description": "Bananas Bunch", "quantity": 3, "uom": "lb", "sales": 1.77, "price": 0.59, "category": "Produce", "brand": "Fresh Farms", "department": "Produce", "date": "2026-01-15"},
-    {"store": "S001", "upc": "490123456792", "description": "Chicken Breast 1lb", "quantity": 2, "uom": "lb", "sales": 13.98, "price": 6.99, "category": "Meat", "brand": "Premium Meats", "department": "Meat", "date": "2026-01-15"},
-    {"store": "S002", "upc": "490123456793", "description": "Greek Yogurt 32oz", "quantity": 1, "uom": "each", "sales": 6.49, "price": 6.49, "category": "Dairy", "brand": "Organic Valley", "department": "Dairy", "date": "2026-01-15"},
-    {"store": "S002", "upc": "490123456794", "description": "Cheddar Cheese Block", "quantity": 1, "uom": "each", "sales": 7.99, "price": 7.99, "category": "Dairy", "brand": "Kerrygold", "department": "Dairy", "date": "2026-01-16"},
-    {"store": "S002", "upc": "490123456795", "description": "Sparkling Water 12pk", "quantity": 2, "uom": "each", "sales": 9.98, "price": 4.99, "category": "Beverages", "brand": "LaCroix", "department": "Beverages", "date": "2026-01-16"},
-    {"store": "S002", "upc": "490123456796", "description": "Paper Towels 6pk", "quantity": 1, "uom": "each", "sales": 8.99, "price": 8.99, "category": "Household", "brand": "Bounty", "department": "Household", "date": "2026-01-16"},
-    {"store": "S003", "upc": "490123456797", "description": "Organic Baby Spinach", "quantity": 1, "uom": "each", "sales": 3.99, "price": 3.99, "category": "Produce", "brand": "Fresh Farms", "department": "Produce", "date": "2026-01-16"},
-    {"store": "S003", "upc": "490123456798", "description": "Ground Beef 80/20", "quantity": 3, "uom": "lb", "sales": 14.97, "price": 4.99, "category": "Meat", "brand": "Premium Meats", "department": "Meat", "date": "2026-01-17"},
-    {"store": "S003", "upc": "490123456799", "description": "Salsa Medium 16oz", "quantity": 2, "uom": "each", "sales": 7.98, "price": 3.99, "category": "Condiments", "brand": "Pace", "department": "Grocery", "date": "2026-01-17"},
-    {"store": "S003", "upc": "490123456800", "description": "Tortilla Chips 13oz", "quantity": 2, "uom": "each", "sales": 9.98, "price": 4.99, "category": "Snacks", "brand": "Tostitos", "department": "Grocery", "date": "2026-01-17"},
-    {"store": "S001", "upc": "490123456801", "description": "Coca-Cola 12pk", "quantity": 3, "uom": "each", "sales": 14.97, "price": 4.99, "category": "Beverages", "brand": "Coca-Cola", "department": "Beverages", "date": "2026-01-18"},
-    {"store": "S001", "upc": "490123456802", "description": "Avocados 4pk", "quantity": 2, "uom": "each", "sales": 7.98, "price": 3.99, "category": "Produce", "brand": "Fresh Farms", "department": "Produce", "date": "2026-01-18"},
-    {"store": "S004", "upc": "490123456803", "description": "Frozen Pizza Supreme", "quantity": 2, "uom": "each", "sales": 11.98, "price": 5.99, "category": "Frozen", "brand": "DiGiorno", "department": "Frozen", "date": "2026-01-18"},
-    {"store": "S004", "upc": "490123456804", "description": "Ice Cream Vanilla 1qt", "quantity": 1, "uom": "each", "sales": 5.49, "price": 5.49, "category": "Frozen", "brand": "Ben & Jerry's", "department": "Frozen", "date": "2026-01-19"},
-    {"store": "S004", "upc": "490123456805", "description": "Dog Food 15lb", "quantity": 1, "uom": "each", "sales": 24.99, "price": 24.99, "category": "Pet", "brand": "Purina", "department": "Pet", "date": "2026-01-19"},
-    {"store": "S001", "upc": "490123456806", "description": "Laundry Detergent 50oz", "quantity": 1, "uom": "each", "sales": 12.99, "price": 12.99, "category": "Household", "brand": "Tide", "department": "Household", "date": "2026-01-19"},
-    {"store": "S002", "upc": "490123456807", "description": "Orange Juice 64oz", "quantity": 2, "uom": "each", "sales": 9.98, "price": 4.99, "category": "Beverages", "brand": "Tropicana", "department": "Beverages", "date": "2026-01-20"},
-    {"store": "S005", "upc": "490123456808", "description": "Butter Unsalted 1lb", "quantity": 2, "uom": "each", "sales": 9.98, "price": 4.99, "category": "Dairy", "brand": "Kerrygold", "department": "Dairy", "date": "2026-01-20"},
-]
-
-BUSINESS_STATISTICS_DEMO = {
-    "total_rows": 1250,
-    "total_columns": 11,
-    "stores": 45,
-    "unique_upcs": 892,
-    "categories": 12,
-    "brands": 64,
-    "departments": 8,
-    "date_range": "2026-01-01 to 2026-03-31",
-    "null_pct": 2.1,
-    "duplicate_pct": 0.3,
-    "completeness": 97.9,
-}
-
-WARNINGS_DEMO = [
-    {"problem": "Low mapping confidence on Promotion", "impact": "Promotion flag may be inaccurate", "recommendation": "Verify promotion column values", "severity": "warning"},
-    {"problem": "Quantity column 'Units' uses count, not weight", "impact": "Weight-based calculations unavailable", "recommendation": "Use weighted_qty if product weights vary", "severity": "info"},
-]
-
-VALIDATION_CHECKS_DEMO = [
-    {"id": "mapping_complete", "label": "Mapping Complete", "status": "pass", "detail": "All 9 physical columns mapped or ignored"},
-    {"id": "required_fields", "label": "Required Fields Present", "status": "pass", "detail": "store, upc, description, quantity, sales, date all mapped"},
-    {"id": "business_schema", "label": "Business Schema Ready", "status": "pass", "detail": "11 business fields in canonical dataset"},
-    {"id": "quantity_resolved", "label": "Quantity Resolved", "status": "pass", "detail": f"Strategy: units, UOM: each"},
-    {"id": "confidence_threshold", "label": "Confidence Threshold Met", "status": "pass", "detail": "Overall confidence: 96% (threshold: 80%)"},
-    {"id": "no_duplicates", "label": "No Duplicate Mappings", "status": "pass", "detail": "Each physical column mapped to exactly one business field"},
-    {"id": "ignored_reviewed", "label": "Ignored Columns Reviewed", "status": "info", "detail": "No columns currently ignored"},
-]
-
-APPROVAL_CHECKLIST_DEMO = [
-    {"id": "mapping_complete", "label": "Mapping Complete", "status": False},
-    {"id": "validation_passed", "label": "Validation Passed", "status": False},
-    {"id": "required_fields", "label": "Required Fields Present", "status": False},
-    {"id": "business_schema", "label": "Business Schema Ready", "status": False},
-    {"id": "dataset_generated", "label": "Canonical Dataset Generated", "status": False},
-]
-
-
 class PreviewService:
     """Manages Business Preview state.
 
@@ -119,8 +46,8 @@ class PreviewService:
         self._approved: bool = False
         self._rejected: bool = False
         self._on_change: Optional[Callable] = None
-        self._preview_rows: List[Dict[str, Any]] = list(PREVIEW_ROWS_DEMO)
-        self._statistics: Dict[str, Any] = dict(BUSINESS_STATISTICS_DEMO)
+        self._preview_rows: List[Dict[str, Any]] = []
+        self._statistics: Dict[str, Any] = {}
 
     # ── Pipeline ──────────────────────────────────────────────
 
@@ -135,13 +62,7 @@ class PreviewService:
     # ── Side-by-Side Comparison ───────────────────────────────
 
     def get_comparison_rows(self) -> List[Dict[str, Any]]:
-        rows = []
-        for c in COMPARISON_ROWS_DEMO:
-            ignored = c["physical"] in self._canonical.ignored_physical
-            mapped = c["physical"] in self._canonical.get_mapped_physical()
-            if mapped or ignored:
-                rows.append(dict(c))
-        return rows
+        return []
 
     # ── Business Dataset Preview ──────────────────────────────
 
@@ -160,19 +81,45 @@ class PreviewService:
     # ── Validation ────────────────────────────────────────────
 
     def get_validation_checks(self) -> List[Dict[str, Any]]:
-        checks = []
-        for c in VALIDATION_CHECKS_DEMO:
-            check = dict(c)
-            if check["id"] == "quantity_resolved":
-                check["detail"] = f"Strategy: {self._canonical.quantity_strategy}, UOM: {self._canonical.uom_value}"
-            if check["id"] == "confidence_threshold":
-                conf = self._canonical.get_summary()["confidence"]
-                check["detail"] = f"Overall confidence: {conf:.0%} (threshold: 80%)"
-            if check["id"] == "ignored_reviewed":
-                ignored = self._canonical.ignored_physical
-                check["detail"] = f"{len(ignored)} columns ignored" if ignored else "No columns currently ignored"
-            checks.append(check)
-        return checks
+        s = self._canonical.get_summary()
+        total_phys = len(self._canonical.physical_columns)
+        mapped = s["mapped"]
+        ignored = s["ignored"]
+        conf = s["confidence"]
+        missing = self._canonical.get_required_missing()
+        essentials = ["store", "upc", "description", "quantity", "sales", "date"]
+
+        mapping_status = "pass" if mapped + ignored >= total_phys else "fail"
+        mapping_detail = f"{mapped + ignored} of {total_phys} physical columns mapped or ignored" if total_phys else "No physical columns"
+
+        fields_status = "pass" if not missing else "fail"
+        fields_detail = ", ".join(e for e in essentials if e not in self._canonical.mappings) if missing else "All required fields mapped"
+
+        schema_status = "pass" if mapped > 0 else "fail"
+        schema_detail = f"{mapped} business fields mapped"
+
+        qty_status = "pass" if self._canonical.quantity_strategy else "fail"
+        qty_detail = f"Strategy: {self._canonical.quantity_strategy}, UOM: {self._canonical.uom_value}"
+
+        conf_status = "pass" if conf >= 0.8 else "fail"
+        conf_detail = f"Overall confidence: {conf:.0%} (threshold: 80%)"
+
+        physicals = [m.physical_column for m in self._canonical.mappings.values() if m.physical_column]
+        no_dup = len(physicals) == len(set(physicals))
+        dup_status = "pass" if no_dup else "fail"
+        dup_detail = "Each physical column mapped to exactly one business field" if no_dup else "Duplicate mappings detected"
+
+        ignored_detail = f"{ignored} columns ignored" if ignored else "No columns currently ignored"
+
+        return [
+            {"id": "mapping_complete", "label": "Mapping Complete", "status": mapping_status, "detail": mapping_detail},
+            {"id": "required_fields", "label": "Required Fields Present", "status": fields_status, "detail": fields_detail},
+            {"id": "business_schema", "label": "Business Schema Ready", "status": schema_status, "detail": schema_detail},
+            {"id": "quantity_resolved", "label": "Quantity Resolved", "status": qty_status, "detail": qty_detail},
+            {"id": "confidence_threshold", "label": "Confidence Threshold Met", "status": conf_status, "detail": conf_detail},
+            {"id": "no_duplicates", "label": "No Duplicate Mappings", "status": dup_status, "detail": dup_detail},
+            {"id": "ignored_reviewed", "label": "Ignored Columns Reviewed", "status": "info", "detail": ignored_detail},
+        ]
 
     # ── Quality Dashboard ─────────────────────────────────────
 
@@ -207,38 +154,29 @@ class PreviewService:
 
     @property
     def warnings(self) -> List[Dict[str, Any]]:
-        base = [dict(w) for w in WARNINGS_DEMO]
+        warnings = []
         missing = self._canonical.get_required_missing()
         if missing:
-            base.insert(0, {
+            warnings.append({
                 "problem": f"Required fields missing: {', '.join(missing)}",
                 "impact": "Processing may fail without these fields",
                 "recommendation": "Return to Canonical Mapping to complete mapping",
                 "severity": "error",
             })
-        return base
+        return warnings
 
     # ── Approval ──────────────────────────────────────────────
 
     def get_approval_checklist(self) -> List[Dict[str, Any]]:
-        checks = []
-        for c in APPROVAL_CHECKLIST_DEMO:
-            check = dict(c)
-            if check["id"] == "mapping_complete":
-                check["status"] = len(self._canonical.mappings) > 0
-            elif check["id"] == "validation_passed":
-                all_pass = all(
-                    chk["status"] in ("pass", "info")
-                    for chk in self.get_validation_checks()
-                )
-                check["status"] = all_pass
-            elif check["id"] == "required_fields":
-                check["status"] = len(self._canonical.get_required_missing()) == 0
-            elif check["id"] == "business_schema":
-                check["status"] = len(self._canonical.mappings) >= 6
-            elif check["id"] == "dataset_generated":
-                check["status"] = True  # canonical dataset is always generated after Sprint 4A
-            checks.append(check)
+        checks = [
+            {"id": "mapping_complete", "label": "Mapping Complete", "status": len(self._canonical.mappings) > 0},
+            {"id": "validation_passed", "label": "Validation Passed", "status": all(
+                chk["status"] in ("pass", "info") for chk in self.get_validation_checks()
+            )},
+            {"id": "required_fields", "label": "Required Fields Present", "status": len(self._canonical.get_required_missing()) == 0},
+            {"id": "business_schema", "label": "Business Schema Ready", "status": len(self._canonical.mappings) >= 6},
+            {"id": "dataset_generated", "label": "Canonical Dataset Generated", "status": True},
+        ]
         return checks
 
     @property

@@ -18,10 +18,16 @@ _notification_colors = {
     NotificationType.PROGRESS: "#9c27b0",
 }
 
+_notification_icons = {
+    NotificationType.SUCCESS: "check_circle",
+    NotificationType.WARNING: "warning",
+    NotificationType.ERROR: "error",
+    NotificationType.INFO: "info",
+    NotificationType.PROGRESS: "hourglass_top",
+}
+
 
 class NotificationService:
-    """Manages UI notifications with type, message, and duration."""
-
     def __init__(self):
         self._notifications: List[Dict[str, Any]] = []
         self._on_notify: Optional[Callable] = None
@@ -32,11 +38,22 @@ class NotificationService:
             "type": ntype,
             "type_value": ntype.value,
             "color": _notification_colors.get(ntype, "#2196f3"),
+            "icon": _notification_icons.get(ntype, "info"),
             "duration": duration,
         }
         self._notifications.append(entry)
         if self._on_notify:
             self._on_notify(entry)
+        self._schedule_dismiss(entry, duration)
+
+    def _schedule_dismiss(self, entry: Dict[str, Any], duration: int) -> None:
+        if duration > 0:
+            from nicegui import ui
+            ui.timer(duration, lambda e=entry: self.dismiss(e), once=True)
+
+    def dismiss(self, entry: Dict[str, Any]) -> None:
+        if entry in self._notifications:
+            self._notifications.remove(entry)
 
     def success(self, message: str, duration: int = 5) -> None:
         self.notify(message, NotificationType.SUCCESS, duration)

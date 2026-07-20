@@ -23,31 +23,6 @@ ADVANCED_FIELDS = [
     "record_type", "region", "division",
 ]
 
-PHYSICAL_COLUMNS_DEMO = [
-    {"name": "Store", "sample": "S001, S002, S003", "type": "string", "null_pct": 0, "conf": 1.0},
-    {"name": "Date", "sample": "2026-01-15, 2026-01-16", "type": "date", "null_pct": 0, "conf": 1.0},
-    {"name": "UPC", "sample": "490123456789", "type": "string", "null_pct": 0, "conf": 1.0},
-    {"name": "Description", "sample": "Organic Whole Milk", "type": "string", "null_pct": 0, "conf": 1.0},
-    {"name": "Category", "sample": "Dairy, Bakery, Produce", "type": "string", "null_pct": 0, "conf": 0.95},
-    {"name": "Units", "sample": "2, 1, 5, 3", "type": "integer", "null_pct": 0, "conf": 1.0},
-    {"name": "Price", "sample": "4.99, 5.49, 1.99", "type": "decimal", "null_pct": 0, "conf": 1.0},
-    {"name": "Sales", "sample": "9.98, 5.49, 9.95", "type": "decimal", "null_pct": 0, "conf": 1.0},
-    {"name": "Promotion", "sample": "No, Yes", "type": "string", "null_pct": 40, "conf": 0.85},
-]
-
-SUGGESTED_MAPPINGS = [
-    {"physical": "Store", "business": "store", "conf": 0.99, "reason": "Exact name match and sample values match store ID pattern"},
-    {"physical": "UPC", "business": "upc", "conf": 0.99, "reason": "Name matches UPC keyword; values are valid UPC-A format"},
-    {"physical": "Description", "business": "description", "conf": 0.99, "reason": "Column contains product descriptions"},
-    {"physical": "Category", "business": "category", "conf": 0.95, "reason": "Name similarity and categorical values"},
-    {"physical": "Units", "business": "quantity", "conf": 0.90, "reason": "Units column recommended as quantity source"},
-    {"physical": "Price", "business": "price", "conf": 0.99, "reason": "Exact name match; values are unit prices"},
-    {"physical": "Sales", "business": "sales", "conf": 0.99, "reason": "Exact name match; values are extended sales amounts"},
-    {"physical": "Date", "business": "date", "conf": 0.99, "reason": "Date column with standard ISO format dates"},
-    {"physical": "Promotion", "business": "promotion", "conf": 0.85, "reason": "Name match; binary Yes/No values indicate promotion flag"},
-]
-
-
 class CanonicalService:
     """Manages canonical mapping state within the UI session.
 
@@ -58,22 +33,13 @@ class CanonicalService:
     def __init__(self, context=None):
         self._context = context
         self._mappings: Dict[str, ColumnMapping] = {}
-        self._physical_columns: List[Dict[str, Any]] = PHYSICAL_COLUMNS_DEMO
-        self._suggestions: List[Dict[str, Any]] = SUGGESTED_MAPPINGS
+        self._physical_columns: List[Dict[str, Any]] = []
+        self._suggestions: List[Dict[str, Any]] = []
         self._quantity_strategy: str = "units"
         self._uom_value: str = "each"
         self._accepted: bool = False
         self._on_change: Optional[Callable] = None
         self._ignored_physical: List[str] = []
-
-        # Initialize suggested mappings
-        for s in SUGGESTED_MAPPINGS:
-            self._mappings[s["business"]] = ColumnMapping(
-                physical_column=s["physical"],
-                canonical_name=s["business"],
-                confidence=s["conf"],
-                source="candidate",
-            )
 
     def get_metadata(self) -> CanonicalMetadata:
         mapped = [m for m in self._mappings.values() if m.physical_column]
@@ -120,16 +86,6 @@ class CanonicalService:
 
     def clear_all_mappings(self) -> None:
         self._mappings.clear()
-        self._notify()
-
-    def auto_map(self) -> None:
-        for s in SUGGESTED_MAPPINGS:
-            self._mappings[s["business"]] = ColumnMapping(
-                physical_column=s["physical"],
-                canonical_name=s["business"],
-                confidence=s["conf"],
-                source="candidate",
-            )
         self._notify()
 
     def ignore_physical(self, column_name: str) -> None:
@@ -200,6 +156,12 @@ class CanonicalService:
         mapped = set(self._mappings.keys())
         return [f for f in essentials - mapped if self._is_missing_essential(f)]
 
+    def auto_map(self) -> None:
+        self._notify()
+
+    def _compute_mapping_confidence(self, physical: str, business: str) -> float:
+        return 0.5
+
     def _is_missing_essential(self, field: str) -> bool:
         return field not in self._mappings or not self._mappings[field].physical_column
 
@@ -229,12 +191,6 @@ class CanonicalService:
     def _resolve_quantity_column_name(self) -> Optional[str]:
         mapping = self._mappings.get("quantity")
         return mapping.physical_column if mapping else None
-
-    def _compute_mapping_confidence(self, physical: str, business: str) -> float:
-        for s in SUGGESTED_MAPPINGS:
-            if s["physical"] == physical and s["business"] == business:
-                return s["conf"]
-        return 0.5
 
     def on_change(self, callback: Callable) -> None:
         self._on_change = callback

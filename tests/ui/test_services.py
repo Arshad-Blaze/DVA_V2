@@ -171,6 +171,6 @@ class TestThemeService:
     def test_on_change_callback(self):
         svc = ThemeService()
         called = []
-        svc.on_change(lambda dark: called.append(dark))
+        svc.on_change(lambda theme: called.append(theme))
         svc.toggle()
-        assert called == [True]
+        assert called == ["dark"]

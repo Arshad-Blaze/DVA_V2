@@ -29,41 +29,6 @@ class ProjectService:
                 if pid:
                     self._projects[pid] = p
 
-        # Seed demo projects only if no persisted data
-        if not self._projects:
-            self._seed_demo_projects()
-
-    def _seed_demo_projects(self) -> None:
-        now = datetime.now()
-        demos = [
-            {
-                "name": "Retail Sales Q2",
-                "description": "Q2 2026 retail sales data processing pipeline",
-                "source": "/data/retail/sales_q2",
-                "created": now,
-                "modified": now,
-            },
-            {
-                "name": "Inventory Analysis",
-                "description": "Warehouse inventory reconciliation and validation",
-                "source": "/data/inventory/2026",
-                "created": now,
-                "modified": now,
-            },
-            {
-                "name": "Customer Feedback",
-                "description": "Customer review sentiment and aggregation pipeline",
-                "source": "/data/customer/feedback",
-                "created": now,
-                "modified": now,
-            },
-        ]
-        for p in demos:
-            pid = p["name"].lower().replace(" ", "_")
-            p["id"] = pid
-            self._projects[pid] = p
-        self._persist()
-
     def create_project(self, name: str, description: str = "",
                        source: str = "") -> Dict[str, Any]:
         pid = name.lower().replace(" ", "_")
