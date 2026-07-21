@@ -1,1 +1,1 @@
-"""Help workspace — placeholder."""
+"""Help workspace — documentation and support."""

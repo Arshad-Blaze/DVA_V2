@@ -2,6 +2,22 @@
 
 All notable changes to DVA Platform are documented in this file.
 
+## [2.0.1] — 2026-07-22
+
+### Hotfix Sprint — Release Readiness
+
+Root-cause analysis and fixes for demo initialization failure, demo mode isolation, integration audit, UX clean-up, and silent error handling across all layers.
+
+#### Fixed
+
+- **Demo Initialization**: Five root causes fixed — empty workspace on demo start (demo CSVs now copied to `~/.dva/demo_temp/`), missing `context.current_connection_id` sync after connection creation, silent error swallowing in `start_demo()`, services not syncing current IDs from restored context, and demo datasets never loaded into detection/canonical/preview
+- **Demo Mode Isolation**: All project/connection CRUD operations guarded during demo; amber "Demo Mode" banner in header; clean teardown on exit with no data leaks to production
+- **Integration Audit**: 10 workspace `__init__.py` placeholder docstrings removed; home workspace dashboard now reads live `project_svc().list_projects()` instead of hardcoded list; execution summary widget reads live `proc_svc().results_summary`
+- **Connection Manager**: All three connection types (Local, SSH, MFT) audited — all fields covered, Create/Edit/Delete/Duplicate/Test/Browse verified functional
+- **Sidebar Clean-up**: Removed stale "downloads" and "history" nav entries that had no registered workspace implementations
+- **Silent Exception Handlers**: 8 locations across detection engine, validation engine, flush cache, encoding detection, and Excel discovery upgraded from silent `except Exception: pass` to `logger.warning(..., exc_info=True)`
+- **No-op Branch**: `Timer.__exit__` in performance service no longer discards elapsed time — logs at debug level when a label is set
+
 ## [2.0.0] — 2026-07-21
 
 ### UX Integration Sprint — Production Readiness

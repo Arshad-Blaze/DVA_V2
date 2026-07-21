@@ -6,11 +6,18 @@ from ui.controllers.project_controller import ProjectController
 from ui.services.notification_service import NotificationService
 
 
+def _seed(svc):
+    svc.create_project("Retail Sales Q2", "Q2 retail data", "/data/q2")
+    svc.create_project("Retail Sales Q1", "Q1 retail data", "/data/q1")
+    svc.create_project("Inventory Audit", "Inventory audit", "/data/inv")
+    svc.close_project()
+
+
 class TestProjectService:
     def test_default_state(self):
         svc = ProjectService()
         projects = svc.list_projects()
-        assert len(projects) == 3  # 3 demo projects seeded
+        assert len(projects) == 0
         assert svc.current_project_id is None
         assert svc.current_project is None
 
@@ -24,6 +31,7 @@ class TestProjectService:
 
     def test_open_project(self):
         svc = ProjectService()
+        _seed(svc)
         p = svc.open_project("retail_sales_q2")
         assert p is not None
         assert p["name"] == "Retail Sales Q2"
@@ -36,6 +44,7 @@ class TestProjectService:
 
     def test_rename_project(self):
         svc = ProjectService()
+        _seed(svc)
         svc.open_project("retail_sales_q2")
         result = svc.rename_project("retail_sales_q2", "Sales Q2 2026")
         assert result is True
@@ -45,6 +54,7 @@ class TestProjectService:
 
     def test_delete_project(self):
         svc = ProjectService()
+        _seed(svc)
         svc.open_project("retail_sales_q2")
         result = svc.delete_project("retail_sales_q2")
         assert result is True
@@ -53,6 +63,7 @@ class TestProjectService:
 
     def test_close_project(self):
         svc = ProjectService()
+        _seed(svc)
         svc.open_project("retail_sales_q2")
         assert svc.current_project_id is not None
         svc.close_project()
@@ -60,6 +71,7 @@ class TestProjectService:
 
     def test_recent_projects(self):
         svc = ProjectService()
+        _seed(svc)
         recent = svc.recent_projects(2)
         assert len(recent) == 2
 
@@ -67,7 +79,6 @@ class TestProjectService:
         svc = ProjectService()
         svc.create_project("ZZZ Project")
         projects = svc.list_projects()
-        # Most recently modified first
         assert projects[0]["id"] == "zzz_project"
 
 
@@ -92,6 +103,7 @@ class TestProjectController:
     def test_open(self):
         notify = NotificationService()
         svc = ProjectService()
+        _seed(svc)
         ctrl = ProjectController(svc, notify)
         p = ctrl.open_project("retail_sales_q2")
         assert p is not None
@@ -108,6 +120,7 @@ class TestProjectController:
     def test_delete(self):
         notify = NotificationService()
         svc = ProjectService()
+        _seed(svc)
         ctrl = ProjectController(svc, notify)
         ctrl.open_project("retail_sales_q2")
         ctrl.delete_project("retail_sales_q2")
@@ -116,6 +129,7 @@ class TestProjectController:
     def test_rename_empty(self):
         notify = NotificationService()
         svc = ProjectService()
+        _seed(svc)
         ctrl = ProjectController(svc, notify)
         ctrl.open_project("retail_sales_q2")
         ctrl.rename_project("retail_sales_q2", "")
@@ -126,6 +140,7 @@ class TestProjectController:
     def test_close(self):
         notify = NotificationService()
         svc = ProjectService()
+        _seed(svc)
         ctrl = ProjectController(svc, notify)
         ctrl.open_project("retail_sales_q2")
         ctrl.close_project()

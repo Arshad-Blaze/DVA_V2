@@ -1,1 +1,1 @@
-"""Settings workspace — placeholder."""
+"""Settings workspace — application configuration."""

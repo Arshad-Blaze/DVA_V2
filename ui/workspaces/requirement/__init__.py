@@ -1,1 +1,1 @@
-"""Requirement workspace — placeholder."""
+"""Requirement workspace — analysis planning and workflow definition."""

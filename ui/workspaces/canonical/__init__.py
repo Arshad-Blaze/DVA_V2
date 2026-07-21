@@ -1,1 +1,1 @@
-"""Canonical workspace — placeholder."""
+"""Canonical workspace — business schema mapping."""

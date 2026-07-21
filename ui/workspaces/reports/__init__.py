@@ -1,1 +1,1 @@
-"""Reports workspace — placeholder."""
+"""Reports workspace — insights, KPIs, and export."""

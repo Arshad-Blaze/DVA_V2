@@ -36,8 +36,6 @@ NAV_ITEMS = [
         ("administration", "Administration", "admin_panel_settings"),
         ("health", "Health", "monitor_heart"),
         ("developer", "Developer", "code"),
-        ("downloads", "Downloads", "download"),
-        ("history", "History", "history"),
         ("settings", "Settings", "settings"),
         ("help", "Help", "help"),
     ]),
@@ -46,7 +44,7 @@ NAV_ITEMS = [
 
 def _is_workspace_available(ws_id: str) -> bool:
     always_available = {"home", "projects", "connection", "administration",
-                        "settings", "help", "health", "developer", "downloads", "history"}
+                        "settings", "help", "health", "developer"}
     if ws_id in always_available:
         return True
     if ws_id == "detection":
@@ -95,8 +93,6 @@ WORKSPACE_TOOLTIPS = {
     "developer": "Developer tools and APIs",
     "settings": "Application settings",
     "help": "Documentation and support",
-    "downloads": "Download exported files",
-    "history": "View operation history",
 }
 
 

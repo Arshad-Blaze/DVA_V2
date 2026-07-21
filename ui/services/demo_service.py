@@ -18,6 +18,9 @@ RETAILER_SAMPLES = [
     {"id": "retailer_sample_3", "name": "Retailer Sample 3", "path": "retailer_sample_3/transactions.csv"},
 ]
 
+DEMO_PROJECT_PREFIX = "Demo"
+DEMO_CONNECTION_PREFIX = "Demo"
+
 
 class DemoService:
     def __init__(self, project_service=None, connection_service=None, detection_service=None,
@@ -37,12 +40,23 @@ class DemoService:
     def is_active(self) -> bool:
         return self._active
 
+    @property
+    def demo_project_id(self) -> Optional[str]:
+        return self._demo_project_id
+
     def start_demo(self) -> bool:
         if self._active:
             return False
         try:
             self._temp_dir = Path(os.path.join(str(Path.home()), ".dva", "demo_temp"))
             self._temp_dir.mkdir(parents=True, exist_ok=True)
+
+            for sample in RETAILER_SAMPLES:
+                src = DEMO_DIR / sample["path"]
+                if src.exists():
+                    dst = self._temp_dir / src.name
+                    if not dst.exists():
+                        shutil.copy2(str(src), str(dst))
 
             if self._project_svc:
                 project = self._project_svc.create_project(
@@ -53,7 +67,7 @@ class DemoService:
                 self._demo_project_id = project["id"]
 
             if self._conn_svc:
-                self._conn_svc.add_connection(
+                conn = self._conn_svc.add_connection(
                     name="Demo Connection",
                     conn_type="local",
                     path=str(self._temp_dir),
@@ -82,7 +96,7 @@ class DemoService:
         if self._conn_svc:
             conns = self._conn_svc.list_connections()
             for c in conns:
-                if "demo" in c.get("name", "").lower():
+                if DEMO_CONNECTION_PREFIX.lower() in c.get("name", "").lower():
                     self._conn_svc.remove_connection(c["id"])
         if self._temp_dir and self._temp_dir.exists():
             shutil.rmtree(str(self._temp_dir))
@@ -96,6 +110,16 @@ class DemoService:
             if s["id"] == sample_id:
                 return str(DEMO_DIR / s["path"])
         return None
+
+    def is_demo_project(self, project_id: str) -> bool:
+        return self._active and project_id == self._demo_project_id
+
+    def is_demo_connection(self, connection_id: str) -> bool:
+        return self._active and any(
+            DEMO_CONNECTION_PREFIX.lower() in c.get("name", "").lower()
+            and c.get("id") == connection_id
+            for c in (self._conn_svc.list_connections() if self._conn_svc else [])
+        )
 
     def reset(self) -> None:
         self._active = False

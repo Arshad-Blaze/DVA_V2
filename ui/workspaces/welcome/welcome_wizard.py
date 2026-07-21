@@ -176,7 +176,10 @@ class WelcomeWizard:
 
     def _start_demo(self) -> None:
         if self._demo:
-            self._demo.start_demo()
+            ok = self._demo.start_demo()
+            if not ok:
+                ui.notify("Failed to initialize demo mode. Please try again or skip demo.", type="negative")
+                return
         self._welcome.set_preference("started_demo", True)
         self._welcome.complete()
         if self._on_complete:

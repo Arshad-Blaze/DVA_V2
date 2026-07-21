@@ -1,6 +1,9 @@
+import logging
 import time
 from typing import Any, Callable, Dict, Optional
 from functools import wraps
+
+logger = logging.getLogger(__name__)
 
 
 class Timer:
@@ -16,7 +19,7 @@ class Timer:
     def __exit__(self, *args):
         self._elapsed = time.perf_counter() - self._start
         if self._label:
-            pass
+            logger.debug("Timer[%s] took %.2fms", self._label, self.elapsed_ms)
 
     @property
     def elapsed_ms(self) -> float:

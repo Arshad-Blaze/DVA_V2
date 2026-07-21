@@ -65,12 +65,13 @@ class ConnectionService:
     automatically persist to disk.
     """
 
-    def __init__(self, persistence=None, context=None):
+    def __init__(self, persistence=None, context=None, demo_svc=None):
         self._connections: Dict[str, Dict[str, Any]] = {}
         self._current_connection_id: Optional[str] = None
         self._current_path: str = "/"
         self._persistence = persistence
         self._context = context
+        self._demo_svc = demo_svc
 
         if self._persistence:
             loaded = self._persistence.load_connections()
@@ -78,6 +79,9 @@ class ConnectionService:
                 cid = c.get("id")
                 if cid:
                     self._connections[cid] = c
+        # Sync current_connection_id from context (restored session)
+        if self._context and self._context.current_connection_id:
+            self._current_connection_id = self._context.current_connection_id
 
     def add_connection(self, name: str, conn_type: str = ConnectionType.LOCAL,
                        path: str = "", description: str = "", **kwargs) -> Dict[str, Any]:
@@ -94,6 +98,10 @@ class ConnectionService:
         }
         connection.update(kwargs)
         self._connections[cid] = connection
+        self._current_connection_id = cid
+        if self._context:
+            self._context.current_connection_id = cid
+            self._context.add_recent_connection(cid)
         self._persist()
         return connection
 
@@ -147,7 +155,12 @@ class ConnectionService:
         self._persist()
         return True
 
+    def _demo_active(self) -> bool:
+        return self._demo_svc is not None and self._demo_svc.is_active
+
     def remove_connection(self, connection_id: str) -> bool:
+        if self._demo_active() and not self._demo_svc.is_demo_connection(connection_id):
+            raise PermissionError("Cannot delete connections while demo mode is active")
         if connection_id in self._connections:
             if self._current_connection_id == connection_id:
                 self._current_connection_id = None

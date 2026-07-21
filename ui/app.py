@@ -27,6 +27,8 @@ def on_navigate(workspace_id: str) -> None:
 def _on_wizard_complete() -> None:
     ctx = shared.context()
     ctx.wizard_completed = True
+    if demo_svc.is_active:
+        ctx.current_workspace = "detection"
     _auto_save()
     ui.navigate.reload()
 

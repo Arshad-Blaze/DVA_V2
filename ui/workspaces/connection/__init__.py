@@ -1,1 +1,1 @@
-"""Connection workspace — placeholder."""
+"""Connection workspace — data source management."""

@@ -4,8 +4,11 @@ This is the ONLY source of truth for file structure.
 No downstream layer may re-detect.
 """
 
+import logging
 import os
 from typing import Dict, List
+
+logger = logging.getLogger(__name__)
 
 from dav_platform.core.contracts import (
     IDataSource,
@@ -152,7 +155,7 @@ class DetectionEngine:
                 ctx.min_line_length = min(lengths)
                 ctx.max_line_length = max(lengths)
         except Exception:
-            pass
+            logger.warning("Failed to build discovery context for %s", file_path, exc_info=True)
         return ctx
 
     def _detect_file_type(self, file_path: str, ctx: DiscoveryContext):
@@ -169,6 +172,7 @@ class DetectionEngine:
                 return FileType.DELIMITED, delimiter, scores
             return FileType.FIXED_WIDTH, None, {}
         except Exception:
+            logger.warning("Failed to detect file type for %s", file_path, exc_info=True)
             return None, None, {}
 
     def _detect_delimited(

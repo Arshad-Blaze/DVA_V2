@@ -88,16 +88,14 @@ def render():
                     ui.label("FROZEN").classes("text-xs text-positive mt-1")
 
     ui.space().classes("h-4")
-    section_header("Recent Activity")
+    section_header("Projects")
     with ui.card().classes("w-full p-4"):
-        items = [
-            ("Sprint 9", "Flush Layer completed", "done", "positive"),
-            ("Sprint 8", "Output Layer completed", "done", "positive"),
-            ("Sprint 7", "Validation Layer completed", "done", "positive"),
-            ("Sprint 6", "Processing Layer completed", "done", "positive"),
-        ]
-        for sprint, desc, icon, color in items:
-            with ui.row().classes("items-center gap-3 py-1"):
-                ui.icon(icon, color=color).classes("text-sm")
-                ui.label(sprint).classes("text-sm font-mono text-gray-500 min-w-20")
-                ui.label(desc).classes("text-sm")
+        projects = project_svc().list_projects()
+        if projects:
+            for p in projects[:5]:
+                with ui.row().classes("items-center gap-3 py-1"):
+                    ui.icon("folder", color="primary").classes("text-sm")
+                    ui.label(p["name"]).classes("text-sm font-semibold min-w-20")
+                    ui.label(p.get("description", "")).classes("text-sm text-gray-500")
+        else:
+            ui.label("No projects yet. Create one to get started.").classes("text-sm text-gray-400")

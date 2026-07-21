@@ -1,8 +1,11 @@
 """Excel file discovery."""
 
+import logging
 from typing import List, Optional
 
 from dav_platform.core.contracts import ExcelSheetInfo
+
+logger = logging.getLogger(__name__)
 
 
 def discover_excel_sheets(file_path: str) -> List[ExcelSheetInfo]:
@@ -58,6 +61,7 @@ def discover_excel_sheets(file_path: str) -> List[ExcelSheetInfo]:
         return sheets
 
     except Exception:
+        logger.warning("Failed to discover Excel sheets in %s", file_path, exc_info=True)
         return []
 
 

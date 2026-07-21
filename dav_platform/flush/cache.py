@@ -1,8 +1,11 @@
 """Flush Layer — Cache Manager."""
 
+import logging
 from typing import Any, Dict, List, Optional
 
 from dav_platform.flush.exceptions import CacheCleanupError
+
+logger = logging.getLogger(__name__)
 
 
 class CacheManager:
@@ -33,7 +36,7 @@ class CacheManager:
                     cache.clear()
                 cleared += 1
             except Exception:
-                pass
+                logger.warning("Failed to clear cache '%s'", key, exc_info=True)
             if key not in preserve:
                 del self._caches[key]
         return {"action": "cache_cleanup", "caches_cleared": cleared, "status": "completed"}
@@ -47,7 +50,7 @@ class CacheManager:
                 elif isinstance(cache, (dict, list)):
                     cache.clear()
             except Exception:
-                pass
+                logger.warning("Failed to clear cache key '%s'", key, exc_info=True)
             del self._caches[key]
             return True
         return False

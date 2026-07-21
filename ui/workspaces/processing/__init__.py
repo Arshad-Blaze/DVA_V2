@@ -1,1 +1,1 @@
-"""Processing workspace — placeholder."""
+"""Processing workspace — pipeline execution and monitoring."""

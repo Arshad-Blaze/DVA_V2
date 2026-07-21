@@ -1,8 +1,11 @@
 """Encoding detection for files."""
 
+import logging
 from typing import Tuple
 
 from dav_platform.core.contracts import EncodingType
+
+logger = logging.getLogger(__name__)
 
 
 def detect_encoding(raw_bytes: bytes) -> Tuple[EncodingType, float]:
@@ -41,7 +44,7 @@ def detect_encoding(raw_bytes: bytes) -> Tuple[EncodingType, float]:
             return EncodingType.LATIN_1, 0.8
         return EncodingType.LATIN_1, 0.5
     except Exception:
-        pass
+        logger.warning("Latin-1 decoding failed unexpectedly", exc_info=True)
 
     # Fallback
     return EncodingType.UNKNOWN, 0.0

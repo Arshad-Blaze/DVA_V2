@@ -10,7 +10,7 @@ class TestConnectionService:
     def test_default_state(self):
         svc = ConnectionService()
         conns = svc.list_connections()
-        assert len(conns) == 3  # 3 demo connections seeded
+        assert len(conns) == 0
         assert svc.current_connection_id is None
         assert svc.current_connection is None
 
@@ -20,7 +20,7 @@ class TestConnectionService:
         assert c["name"] == "Test Source"
         assert c["id"] == "test_source"
         assert c["status"] == "disconnected"
-        assert len(svc.list_connections()) == 4
+        assert len(svc.list_connections()) == 1
 
     def test_connect(self):
         svc = ConnectionService()

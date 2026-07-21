@@ -1,4 +1,5 @@
 from nicegui import ui
+from ui.shared import demo_svc
 
 
 THEME_ICONS = {
@@ -19,6 +20,10 @@ def create_header(session_ctrl, session_svc) -> None:
             ui.icon("dataset_linked", color="white").classes("text-xl")
             ui.label("DVA Platform").classes("text-lg font-bold text-white")
             ui.label(f"|  {session_svc.current_workspace.title()}").classes("text-sm text-gray-300")
+            if demo_svc().is_active:
+                with ui.row().classes("items-center gap-1 ml-4 bg-amber-500 text-black px-3 py-1 rounded-full"):
+                    ui.icon("science").classes("text-sm")
+                    ui.label("Demo Mode").classes("text-xs font-bold uppercase tracking-wider")
 
         with ui.row().classes("items-center gap-2"):
             status = session_svc.execution_status

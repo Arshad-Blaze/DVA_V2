@@ -15,11 +15,12 @@ class ProjectService:
     automatically persist to disk. Never touches backend.
     """
 
-    def __init__(self, persistence=None, context=None):
+    def __init__(self, persistence=None, context=None, demo_svc=None):
         self._projects: Dict[str, Dict[str, Any]] = {}
         self._current_project_id: Optional[str] = None
         self._persistence = persistence
         self._context = context
+        self._demo_svc = demo_svc
 
         # Load from persistence if available
         if self._persistence:
@@ -28,9 +29,17 @@ class ProjectService:
                 pid = p.get("id")
                 if pid:
                     self._projects[pid] = p
+        # Sync current_project_id from context (restored session)
+        if self._context and self._context.current_project_id:
+            self._current_project_id = self._context.current_project_id
+
+    def _demo_active(self) -> bool:
+        return self._demo_svc is not None and self._demo_svc.is_active
 
     def create_project(self, name: str, description: str = "",
                        source: str = "") -> Dict[str, Any]:
+        if self._demo_active() and "demo" not in name.lower():
+            raise PermissionError("Cannot create projects while demo mode is active")
         pid = name.lower().replace(" ", "_")
         now = datetime.now()
         project = {
@@ -77,6 +86,8 @@ class ProjectService:
         return True
 
     def delete_project(self, project_id: str) -> bool:
+        if self._demo_active() and not self._demo_svc.is_demo_project(project_id):
+            raise PermissionError("Cannot delete projects while demo mode is active")
         if project_id in self._projects:
             del self._projects[project_id]
             if self._current_project_id == project_id:

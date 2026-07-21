@@ -3,10 +3,13 @@
 Orchestrates the full validation pipeline.
 """
 
+import logging
 import time
 from typing import Any, Dict, List, Optional
 
 import polars as pl
+
+logger = logging.getLogger(__name__)
 
 from dav_platform.core.contracts import (
     AggregationResult,
@@ -142,7 +145,7 @@ class ValidationEngine:
                             issues = rule_instance.evaluate(agg_result.data, context=ctx)
                             all_issues.extend(issues)
                         except Exception:
-                            pass
+                            logger.warning("Rule '%s' failed on aggregation result", rule_instance.name, exc_info=True)
 
         if calculation_results:
             for calc_result in calculation_results:
@@ -152,7 +155,7 @@ class ValidationEngine:
                             issues = rule_instance.evaluate(calc_result.data, context=ctx)
                             all_issues.extend(issues)
                         except Exception:
-                            pass
+                            logger.warning("Rule '%s' failed on calculation result", rule_instance.name, exc_info=True)
 
         execution_time = time.time() - start
         self._metadata_collector.set_duration(execution_time)

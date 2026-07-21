@@ -1,1 +1,1 @@
-"""Validation workspace — placeholder."""
+"""Validation workspace — business rules and quality control."""

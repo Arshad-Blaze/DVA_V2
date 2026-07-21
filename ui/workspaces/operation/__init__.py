@@ -1,1 +1,1 @@
-"""Operation workspace — placeholder."""
+"""Operation workspace — execution planning and orchestration."""

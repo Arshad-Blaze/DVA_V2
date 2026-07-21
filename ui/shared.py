@@ -167,6 +167,8 @@ def init_all(with_persistence: bool = True) -> None:
         canonical_service=_canonical_svc,
         preview_service=_preview_svc,
     )
+    _project_svc._demo_svc = _demo_svc
+    _conn_svc._demo_svc = _demo_svc
 
     if _context and _theme_svc:
         _theme_svc.set_theme(_context.theme)
