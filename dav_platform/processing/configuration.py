@@ -47,7 +47,7 @@ def build_config(
         if isinstance(ctx_calcs, list):
             resolved_calcs = ctx_calcs
     if resolved_calcs is None and dataset is not None:
-        resolved_calcs = _detect_calculations(dataset)
+        resolved_calcs = _detect_calculations(dataset, group_columns=resolved_groups)
 
     # Resolve chunk_size: explicit > context > default
     resolved_chunk = chunk_size
@@ -82,7 +82,10 @@ def _detect_group_columns(dataset: CanonicalDataset) -> List[str]:
     return [col for col in dataset.canonical_columns if col in GROUPABLE_COLUMNS]
 
 
-def _detect_calculations(dataset: CanonicalDataset) -> List[CalculationConfig]:
+def _detect_calculations(
+    dataset: CanonicalDataset,
+    group_columns: Optional[List[str]] = None,
+) -> List[CalculationConfig]:
     """Suggest default calculations based on available columns."""
     if dataset.dataframe is None or not dataset.canonical_columns:
         return []
@@ -90,8 +93,11 @@ def _detect_calculations(dataset: CanonicalDataset) -> List[CalculationConfig]:
     available = set(dataset.dataframe.columns)
     calcs: List[CalculationConfig] = []
 
-    # If quantity exists, compute total as a placeholder
-    if "quantity" in available and "price" in available:
+    # If quantity exists, compute total as a placeholder.
+    # Skip when aggregation is planned: aggregation replaces the raw
+    # quantity/price columns, so the calculation would reference columns
+    # that no longer exist after the aggregation step.
+    if "quantity" in available and "price" in available and not group_columns:
         calcs.append(CalculationConfig(
             name="total_value",
             columns=["quantity", "price"],

@@ -9,6 +9,7 @@ from datetime import datetime
 from dataclasses import asdict
 
 from dav_platform.core.contracts import (
+    IDataSource,
     DiscoveryResult,
     FileType,
     EncodingType,
@@ -16,6 +17,8 @@ from dav_platform.core.contracts import (
     LayoutField,
     DetectionStatistics,
 )
+from dav_platform.connection.local import LocalDataSource
+from dav_platform.detection.engine import DetectionEngine
 
 
 DETECTION_STEPS = [
@@ -36,8 +39,10 @@ class DetectionService:
     Never performs actual detection — only visualizes and collects overrides.
     """
 
-    def __init__(self, context=None):
+    def __init__(self, context=None, source: Optional[IDataSource] = None):
         self._context = context
+        self._source = source or LocalDataSource()
+        self._engine = DetectionEngine(self._source)
         self._result: Optional[DiscoveryResult] = None
         self._timeline: List[Dict[str, Any]] = []
         self._warnings: List[Dict[str, Any]] = []
@@ -56,14 +61,54 @@ class DetectionService:
     def run_detection(self, file_path: Optional[str] = None) -> None:
         if file_path:
             self._selected_file = file_path
+        if not self._selected_file:
+            self._detection_status = "idle"
+            return
         self._detection_status = "running"
         self._result = None
         self._timeline = []
         self._warnings = []
         self._overrides.clear()
         self._accepted = False
-        self._detection_status = "completed"
+
+        try:
+            result = self._engine.detect(self._selected_file)
+            self._result = result
+            self._detection_status = "completed"
+            self._build_timeline(result)
+            self._build_warnings(result)
+        except Exception as e:
+            self._detection_status = "failed"
+            self._warnings.append({
+                "type": "error",
+                "message": f"Detection failed: {e}",
+            })
         self._notify()
+
+    def _build_timeline(self, result: DiscoveryResult) -> None:
+        """Build timeline entries from the real detection result."""
+        steps = [s for s in DETECTION_STEPS]
+        entries = [{"step": steps[0], "status": "completed", "detail": result.file_path}]
+        if result.encoding_confidence > 0:
+            entries.append({"step": "Encoding Detected", "status": "completed", "detail": result.encoding.upper()})
+        if result.delimiter:
+            entries.append({"step": "Delimiter Detected", "status": "completed", "detail": repr(result.delimiter)})
+        if result.has_header:
+            entries.append({"step": "Header Detected", "status": "completed", "detail": f"Row {result.header_start_line + 1}"})
+        if result.layout_fields:
+            entries.append({"step": "Layout Detected", "status": "completed", "detail": f"{len(result.layout_fields)} fields"})
+        entries.append({"step": "Detection Complete", "status": "completed",
+                        "detail": f"Type: {result.file_type.value}, confidence: {result.confidence:.0%}"})
+        self._timeline = entries
+
+    def _build_warnings(self, result: DiscoveryResult) -> None:
+        """Build warnings list from the real detection result."""
+        for w in getattr(result, "warnings", []) or []:
+            self._warnings.append({"type": "warning", "message": w})
+        for r in getattr(result, "recommendations", []) or []:
+            self._warnings.append({"type": "info", "message": r})
+        if not self._warnings:
+            self._warnings.append({"type": "info", "message": "No warnings detected"})
 
     def validate_detection(self) -> bool:
         """Validate current detection."""
@@ -150,6 +195,17 @@ class DetectionService:
     @property
     def connection_id(self) -> Optional[str]:
         return self._connection_id
+
+    def set_connection_id(self, connection_id: str) -> None:
+        self._connection_id = connection_id
+
+    def load_result(self, result: DiscoveryResult) -> None:
+        """Inject a pre-computed DiscoveryResult (used by tests/integration)."""
+        self._result = result
+        self._detection_status = "completed"
+        self._build_timeline(result)
+        self._build_warnings(result)
+        self._notify()
 
     def switch_file(self, file_name: str) -> None:
         self._selected_file = file_name

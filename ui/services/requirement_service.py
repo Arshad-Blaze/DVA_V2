@@ -14,7 +14,9 @@ from dav_platform.core.contracts import (
     CapabilityMatrix,
     ExecutionStep,
     OperationContext,
+    CanonicalDataset,
 )
+from dav_platform.requirements.engine import RequirementLayer
 
 
 BUSINESS_GOALS_DEMO = [
@@ -302,11 +304,26 @@ class RequirementService:
 
     def __init__(self, context=None):
         self._context = context
+        self._layer = RequirementLayer()
+        self._dataset: Optional[CanonicalDataset] = None
+        self._backend_context: Optional[OperationContext] = None
         self._selected_goal_id: Optional[str] = None
         self._confirmed: bool = False
         self._recommendation_accepted: bool = False
         self._on_change: Optional[Callable] = None
         self._goals = list(BUSINESS_GOALS_DEMO)
+
+    # ── Backend dataset injection ────────────────────────────
+
+    def load_dataset(self, dataset: CanonicalDataset) -> None:
+        """Consume a CanonicalDataset and compute a real OperationContext
+        via the backend RequirementLayer."""
+        self._dataset = dataset
+        try:
+            self._backend_context = self._layer.process(dataset=dataset)
+        except Exception:
+            self._backend_context = None
+        self._notify()
 
     # ── Goal Management ─────────────────────────────────────
 
@@ -459,6 +476,8 @@ class RequirementService:
     # ── OperationContext (display only) ────────────────────
 
     def get_operation_context(self) -> OperationContext:
+        if self._backend_context is not None:
+            return self._backend_context
         goal = self.selected_goal
         return OperationContext(
             mode=GOAL_MODES.get(self._selected_goal_id, ProcessingMode.AGGREGATE_ONLY),

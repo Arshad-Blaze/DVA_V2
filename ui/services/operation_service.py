@@ -7,7 +7,6 @@ Never creates execution plans or calculates estimates.
 from typing import Any, Callable, Dict, List, Optional
 from dav_platform.core.contracts import ExecutionStep, OperationContext, ProcessingMode
 
-
 PIPELINE_STAGES_DEMO = [
     {"id": "load", "label": "Load", "icon": "upload_file", "purpose": "Load canonical dataset from mapped source", "duration": "~30 sec", "dependencies": "Project, Connection, Detection, Mapping"},
     {"id": "aggregate", "label": "Aggregate", "icon": "functions", "purpose": "Aggregate data by selected dimensions", "duration": "~1 min", "dependencies": "Load complete"},
@@ -65,10 +64,24 @@ class OperationService:
     def pipeline_stages(self) -> List[Dict[str, Any]]:
         return list(PIPELINE_STAGES_DEMO)
 
+    # ── Backend OperationContext ─────────────────────────────
+
+    @property
+    def operation_context(self) -> Optional[OperationContext]:
+        if self._req and hasattr(self._req, "get_operation_context"):
+            try:
+                return self._req.get_operation_context()
+            except Exception:
+                return None
+        return None
+
     # ── Execution Steps (from Requirement) ───────────────────
 
     @property
     def execution_steps(self) -> List[ExecutionStep]:
+        ctx = self.operation_context
+        if ctx and ctx.execution_plan:
+            return list(ctx.execution_plan)
         if self._req and hasattr(self._req, 'execution_plan'):
             return self._req.execution_plan
         return []

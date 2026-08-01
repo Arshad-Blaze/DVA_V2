@@ -8,6 +8,16 @@ from typing import Any, Dict, List, Optional
 from datetime import datetime
 from pathlib import Path
 
+from dav_platform.connection.local import LocalDataSource
+
+
+def _is_number(value: str) -> bool:
+    try:
+        float(value)
+        return True
+    except (TypeError, ValueError):
+        return False
+
 
 class ConnectionType:
     LOCAL = "local"
@@ -207,26 +217,22 @@ class ConnectionService:
         return self._current_path
 
     def browse_directory(self, path: str) -> List[Dict[str, Any]]:
-        entries = []
+        """Browse a directory using the backend LocalDataSource connector."""
         try:
-            p = Path(path).expanduser().resolve()
-            if p.exists() and p.is_dir():
-                for child in sorted(p.iterdir()):
-                    try:
-                        stat = child.stat()
-                        entries.append({
-                            "name": child.name,
-                            "path": str(child),
-                            "is_dir": child.is_dir(),
-                            "size": stat.st_size if child.is_file() else 0,
-                            "modified": datetime.fromtimestamp(stat.st_mtime),
-                            "ext": child.suffix if child.is_file() else "",
-                        })
-                    except OSError:
-                        continue
-        except (OSError, PermissionError):
-            pass
-        return entries
+            entries = LocalDataSource().list_directory(path)
+            return [
+                {
+                    "name": e.name,
+                    "path": e.path,
+                    "is_dir": e.is_dir,
+                    "size": e.size or 0,
+                    "modified": datetime.fromtimestamp(e.modified) if e.modified and _is_number(e.modified) else None,
+                    "ext": Path(e.name).suffix if not e.is_dir else "",
+                }
+                for e in entries
+            ]
+        except Exception:
+            return []
 
     def _persist(self) -> None:
         if self._persistence:

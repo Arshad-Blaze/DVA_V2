@@ -213,3 +213,57 @@ class TestValidationController:
 
     def test_export_failed(self, ctrl, svc):
         assert ctrl.export_failed() == svc.export_failed_records()
+
+
+class TestValidationBackendWiring:
+    def test_validate_runs_backend_engine(self, ctx):
+        import polars as pl
+        from dav_platform.core.contracts import ProcessingResult, ValidationSeverity
+
+        svc = ValidationService(ctx)
+        assert svc.has_result is False
+
+        df = pl.DataFrame({"store": ["S1", "S1", "S2"], "quantity": [1, -2, 3]})
+        result = ProcessingResult(df=df, row_count=3, errors=[])
+        vr = svc.validate(result)
+
+        assert svc.has_result is True
+        assert vr is svc._result or vr.passed is not None
+        d = svc.dashboard
+        assert "total_rules" in d
+        assert d["overall_quality"] in ("High", "Low")
+        assert d["business_readiness"] in ("Good", "Needs Review")
+
+    def test_load_result_injects_issues(self, ctx):
+        from dav_platform.core.contracts import (
+            ProcessingResult,
+            ValidationIssue,
+            ValidationResult,
+            ValidationSeverity,
+        )
+
+        df = None
+        vr = ValidationResult(
+            passed=False,
+            issues=[
+                ValidationIssue(
+                    rule="price_non_negative",
+                    message="UPC has negative price",
+                    severity=ValidationSeverity.ERROR,
+                    row_count=3,
+                    column="price",
+                ),
+            ],
+            error_count=1,
+            warning_count=0,
+        )
+        svc = ValidationService(ctx)
+        svc.load_result(vr)
+
+        assert svc.has_result is True
+        issues = svc.all_issues
+        assert len(issues) == 1
+        assert issues[0]["rule"] == "price_non_negative"
+        assert issues[0]["severity"] == "error"
+        assert issues[0]["affected_records"] == 3
+        assert svc.dashboard["failed"] == 1

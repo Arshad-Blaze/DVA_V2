@@ -10,7 +10,7 @@ Never validates data — only visualizes results.
 import csv
 import io
 from typing import Any, Callable, Dict, List, Optional
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 
 from dav_platform.core.contracts import (
     ValidationSeverity,
@@ -20,6 +20,7 @@ from dav_platform.core.contracts import (
     ValidationRule,
     ValidationSummary,
 )
+from dav_platform.validation.engine import ValidationEngine
 
 
 DASHBOARD_DEMO = {
@@ -106,6 +107,8 @@ class ValidationService:
 
     def __init__(self, context=None):
         self._context = context
+        self._engine = ValidationEngine()
+        self._result: Optional[ValidationResult] = None
         self._approved: bool = False
         self._rejected: bool = False
         self._selected_issue: Optional[int] = None
@@ -114,11 +117,61 @@ class ValidationService:
         self._search_query: str = ""
         self._on_change: Optional[Callable] = None
 
+    # ── Result loading from Processing layer ─────────────────
+
+    def load_result(self, result: ValidationResult) -> None:
+        """Inject a real ValidationResult from the backend engine."""
+        self._result = result
+        self._notify()
+
+    def validate(
+        self,
+        processing_result,
+        aggregation_results: Optional[list] = None,
+        calculation_results: Optional[list] = None,
+        statistics=None,
+        context: Optional[Dict[str, Any]] = None,
+    ) -> ValidationResult:
+        """Run the real backend ValidationEngine."""
+        result = self._engine.validate(
+            processing_result,
+            aggregation_results=aggregation_results,
+            calculation_results=calculation_results,
+            statistics=statistics,
+            context=context,
+        )
+        self._result = result
+        self._notify()
+        return result
+
+    @property
+    def has_result(self) -> bool:
+        return self._result is not None
+
     # ── Dashboard ────────────────────────────────────────────
 
     @property
     def dashboard(self) -> Dict[str, Any]:
-        return dict(DASHBOARD_DEMO)
+        if self._result is None:
+            return dict(DASHBOARD_DEMO)
+        return {
+            "total_rules": len(self._engine._instantiated_rules) or max(len(self._result.issues), 1),
+            "passed": max(0, len(self._result.issues) - self._result.error_count - self._result.warning_count),
+            "warnings": self._result.warning_count,
+            "failed": self._result.error_count,
+            "critical": sum(1 for i in self._result.issues if i.severity == ValidationSeverity.CRITICAL),
+            "score": round(self._compute_score(self._result), 1),
+            "business_readiness": "Good" if self._result.error_count == 0 else "Needs Review",
+            "overall_quality": "High" if self._result.passed else "Low",
+        }
+
+    @staticmethod
+    def _compute_score(result: ValidationResult) -> float:
+        total = len(result.issues)
+        if not total:
+            return 100.0
+        errors = result.error_count * 2 + result.warning_count
+        return max(0.0, round(100 - errors * 100 / total, 1))
 
     # ── Heat Map ─────────────────────────────────────────────
 
@@ -141,7 +194,23 @@ class ValidationService:
 
     @property
     def all_issues(self) -> List[Dict[str, Any]]:
-        return [dict(i) for i in ISSUES_DEMO]
+        if self._result is None:
+            return [dict(i) for i in ISSUES_DEMO]
+        issues = []
+        for idx, issue in enumerate(self._result.issues):
+            issues.append({
+                "rule": issue.rule,
+                "severity": issue.severity.value,
+                "message": issue.message,
+                "affected_records": issue.row_count,
+                "column": issue.column or "",
+                "entity": "",
+                "entity_id": "",
+                "business_impact": "",
+                "recommendation": "",
+                "category": issue.rule,
+            })
+        return issues
 
     @property
     def filtered_issues(self) -> List[Dict[str, Any]]:
@@ -248,7 +317,7 @@ class ValidationService:
         buf = io.StringIO()
         w = csv.writer(buf)
         w.writerow(["Rule", "Severity", "Message", "Affected Records", "Column", "Business Impact", "Recommendation"])
-        for issue in ISSUES_DEMO:
+        for issue in self.all_issues:
             w.writerow([issue["rule"], issue["severity"], issue["message"],
                         issue["affected_records"], issue["column"],
                         issue["business_impact"], issue["recommendation"]])
@@ -258,7 +327,7 @@ class ValidationService:
         buf = io.StringIO()
         w = csv.writer(buf)
         w.writerow(["Rule", "Entity", "Entity ID", "Severity", "Affected Records"])
-        for issue in ISSUES_DEMO:
+        for issue in self.all_issues:
             if issue["severity"] in ("error", "critical"):
                 w.writerow([issue["rule"], issue.get("entity", ""),
                             issue.get("entity_id", ""), issue["severity"],

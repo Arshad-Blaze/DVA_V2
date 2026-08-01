@@ -4,21 +4,28 @@ import pytest
 from ui.services.canonical_service import CanonicalService
 from ui.controllers.canonical_controller import CanonicalController
 from ui.services.notification_service import NotificationService
-from dav_platform.core.contracts import CANONICAL_COLUMNS
+from tests.ui.conftest import make_discovery_result, make_sales_dataframe
 
 
 class TestCanonicalService:
     def test_default_state(self):
         svc = CanonicalService()
-        assert len(svc.mappings) == 9  # 9 suggested mappings
-        assert len(svc.physical_columns) == 9
-        assert len(svc.suggestions) == 9
+        assert len(svc.mappings) == 0
+        assert len(svc.physical_columns) == 0
+        assert len(svc.suggestions) == 0
         assert svc.quantity_strategy == "units"
         assert svc.uom_value == "each"
         assert svc.accepted is False
 
+    def test_load_discovery_generates_mappings(self):
+        svc = CanonicalService()
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
+        assert len(svc.mappings) == 9
+        assert len(svc.physical_columns) == 9
+
     def test_get_mapping(self):
         svc = CanonicalService()
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
         m = svc.get_mapping("store")
         assert m is not None
         assert m.physical_column == "Store"
@@ -35,16 +42,19 @@ class TestCanonicalService:
 
     def test_clear_mapping(self):
         svc = CanonicalService()
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
         svc.clear_mapping("store")
         assert svc.get_mapping("store") is None
 
     def test_clear_all_mappings(self):
         svc = CanonicalService()
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
         svc.clear_all_mappings()
         assert len(svc.mappings) == 0
 
     def test_auto_map(self):
         svc = CanonicalService()
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
         svc.clear_all_mappings()
         svc.auto_map()
         assert len(svc.mappings) == 9
@@ -52,6 +62,7 @@ class TestCanonicalService:
 
     def test_ignore_physical(self):
         svc = CanonicalService()
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
         svc.ignore_physical("Promotion")
         assert "Promotion" in svc.ignored_physical
         svc.ignore_physical("Promotion")  # duplicate
@@ -59,6 +70,7 @@ class TestCanonicalService:
 
     def test_unignore_physical(self):
         svc = CanonicalService()
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
         svc.ignore_physical("Promotion")
         svc.unignore_physical("Promotion")
         assert "Promotion" not in svc.ignored_physical
@@ -80,6 +92,7 @@ class TestCanonicalService:
 
     def test_get_summary(self):
         svc = CanonicalService()
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
         s = svc.get_summary()
         assert s["mapped"] == 9
         assert s["total"] == 9
@@ -89,31 +102,36 @@ class TestCanonicalService:
 
     def test_get_metadata(self):
         svc = CanonicalService()
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
         meta = svc.get_metadata()
         assert meta.mapped_columns == 9
-        assert meta.quantity_type == "units"
+        assert meta.quantity_type == "unit"
         assert meta.uom_strategy == "detected"
 
     def test_get_mapped_physical(self):
         svc = CanonicalService()
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
         mapped = svc.get_mapped_physical()
         assert "Store" in mapped
         assert len(mapped) == 9
 
     def test_get_unmapped_physical(self):
         svc = CanonicalService()
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
         svc.clear_all_mappings()
         unmapped = svc.get_unmapped_physical()
         assert len(unmapped) == 9
 
     def test_get_required_missing(self):
         svc = CanonicalService()
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
         svc.clear_mapping("store")
         missing = svc.get_required_missing()
         assert "store" in missing
 
     def test_has_changes(self):
         svc = CanonicalService()
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
         assert svc.has_changes is False  # all auto-mapped
         svc.set_mapping("brand", "Sales")
         assert svc.has_changes is True
@@ -141,6 +159,7 @@ class TestCanonicalController:
         notify = NotificationService()
         svc = CanonicalService()
         ctrl = CanonicalController(svc, notify)
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
         svc.clear_all_mappings()
         ctrl.auto_map()
         assert len(svc.mappings) == 9
@@ -200,6 +219,7 @@ class TestCanonicalController:
         """Accept blocked when required fields missing."""
         notify = NotificationService()
         svc = CanonicalService()
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
         ctrl = CanonicalController(svc, notify)
         svc.clear_mapping("store")
         svc.clear_mapping("upc")
@@ -211,6 +231,7 @@ class TestCanonicalController:
     def test_accept_succeeds(self):
         notify = NotificationService()
         svc = CanonicalService()
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
         ctrl = CanonicalController(svc, notify)
         ctrl.accept()
         assert svc.accepted is True
@@ -225,6 +246,7 @@ class TestCanonicalController:
     def test_summary_property(self):
         notify = NotificationService()
         svc = CanonicalService()
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
         ctrl = CanonicalController(svc, notify)
         s = ctrl.summary
         assert s["mapped"] == 9
@@ -232,6 +254,7 @@ class TestCanonicalController:
     def test_get_unmapped_physical(self):
         notify = NotificationService()
         svc = CanonicalService()
+        svc.load_discovery(make_discovery_result(), make_sales_dataframe())
         ctrl = CanonicalController(svc, notify)
         svc.clear_all_mappings()
         unmapped = ctrl.get_unmapped_physical()

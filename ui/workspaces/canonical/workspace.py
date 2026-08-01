@@ -94,7 +94,7 @@ def _render_business_schema():
     with ui.card().classes("w-full p-4"):
         ui.label("Essentials").classes("text-md font-bold text-primary")
 
-        for field in ["store", "upc", "description", "quantity", "sales", "date"]:
+        for field in ["store", "upc", "description", "quantity", "price", "date"]:
             _render_mapping_row(field, schema.get(field, ""), physical_names, svc)
 
         with ui.expansion("Advanced Fields", icon="expand_more").classes("w-full mt-3"):
@@ -214,7 +214,7 @@ def _render_mapping_confidence():
         with ui.card().classes("flex-1 p-4"):
             ui.label("Confidence Breakdown").classes("text-sm font-semibold mb-2")
             svc_local = canonical_svc()
-            for field in ["store", "upc", "description", "quantity", "sales", "date"]:
+            for field in ["store", "upc", "description", "quantity", "price", "date"]:
                 mapping = svc_local.get_mapping(field)
                 conf = mapping.confidence if mapping else 0.0
                 _confidence_row(field.title(), conf)

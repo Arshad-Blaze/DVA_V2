@@ -16,7 +16,11 @@ from dav_platform.core.contracts import (
     ExecutionMetadata,
     ExecutionResult,
     ProcessingStatistics,
+    OperationContext,
+    CanonicalDataset,
 )
+from dav_platform.processing.engine import ProcessingEngine
+from dav_platform.processing.configuration import build_config
 
 LOG_LEVELS = ["info", "warning", "error", "success"]
 
@@ -36,8 +40,9 @@ class ProcessingService:
     Never processes data — UI only monitors.
     """
 
-    def __init__(self, op_svc=None):
+    def __init__(self, op_svc=None, dataset: Optional[CanonicalDataset] = None):
         self._op = op_svc
+        self._dataset: Optional[CanonicalDataset] = dataset
         self._state: ExecutionState = ExecutionState.PENDING
         self._current_stage: int = 0
         self._progress: float = 0.0
@@ -59,6 +64,10 @@ class ProcessingService:
                 action=label,
                 state=ExecutionState.PENDING,
             ))
+
+    def load_dataset(self, dataset: Optional[CanonicalDataset]) -> None:
+        """Attach a canonical dataset for real backend processing."""
+        self._dataset = dataset
 
     def _default_metrics(self) -> Dict[str, Any]:
         return {
@@ -124,9 +133,65 @@ class ProcessingService:
             )
 
         self._add_log("info", "Execution started", "Initializing processing pipeline...")
-        self._timer = threading.Thread(target=self._simulate, daemon=True)
+        self._timer = threading.Thread(target=self._execute, daemon=True)
         self._timer.start()
         self._notify()
+
+    def _execute(self) -> None:
+        if self._dataset is not None:
+            self._run_backend()
+        else:
+            self._simulate()
+
+    def _run_backend(self) -> None:
+        """Execute the real ProcessingEngine against the loaded dataset."""
+        dataset = self._dataset
+        context = None
+        if self._op is not None and hasattr(self._op, "operation_context"):
+            try:
+                context = self._op.operation_context
+            except Exception:
+                context = None
+
+        self._step_results[0].state = ExecutionState.RUNNING
+        self._current_stage = 0
+        self._add_log("info", "Load", "Loading canonical dataset...")
+        self._notify()
+
+        try:
+            config = build_config(dataset=dataset, context=context)
+            engine = ProcessingEngine()
+            result = engine.process(dataset, config=config, context=context)
+
+            if result is None or getattr(result, "errors", None):
+                err_msg = ""
+                if result is not None:
+                    err_msg = "; ".join(getattr(result, "errors", []) or [])
+                raise RuntimeError(err_msg or "Processing failed")
+
+            self._rows_processed = int(getattr(result, "row_count", 0) or 0)
+            self._elapsed = getattr(result, "elapsed_seconds", 0.0) or 0.0
+            self._progress = 100.0
+            self._metrics = self._default_metrics()
+            self._metrics["rows"] = self._rows_processed
+            self._metrics["chunks"] = 1
+            self._metrics["memory_mb"] = round(getattr(result, "memory_peak_mb", 0.0) or 0.0, 1)
+            self._metrics["peak_memory_mb"] = self._metrics["memory_mb"]
+            self._metrics["rows_per_sec"] = round(self._rows_processed / max(self._elapsed, 0.1), 1)
+
+            for i in range(len(self._step_results)):
+                self._step_results[i].state = ExecutionState.COMPLETED
+                self._step_results[i].elapsed_seconds = round(self._elapsed / max(len(self._step_results), 1), 1)
+            self._current_stage = len(self._step_results) - 1
+
+            self._state = ExecutionState.COMPLETED
+            self._add_log("success", "Execution", f"Processing completed in {self._elapsed:.1f}s")
+        except Exception as exc:
+            self._state = ExecutionState.FAILED
+            self._add_log("error", "Execution", f"Processing failed: {exc}")
+        finally:
+            self._running = False
+            self._notify()
 
     def _simulate(self) -> None:
         for stage_idx in range(len(STAGE_LABELS)):

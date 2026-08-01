@@ -9,7 +9,9 @@ Never maps, validates, or transforms data.
 from typing import Any, Callable, Dict, List, Optional
 from dataclasses import dataclass, field
 
-from dav_platform.core.contracts import CANONICAL_COLUMNS, ColumnMapping, CanonicalMetadata
+import polars as pl
+
+from dav_platform.core.contracts import CANONICAL_COLUMNS, ColumnMapping, CanonicalMetadata, CanonicalDataset
 
 
 PIPELINE_STAGES = [
@@ -25,7 +27,6 @@ PREVIEW_COLUMNS = [
     {"name": "description", "label": "Description", "field": "description", "align": "left"},
     {"name": "quantity", "label": "Quantity", "field": "quantity", "align": "right"},
     {"name": "uom", "label": "UOM", "field": "uom", "align": "center"},
-    {"name": "sales", "label": "Sales", "field": "sales", "align": "right"},
     {"name": "price", "label": "Price", "field": "price", "align": "right"},
     {"name": "category", "label": "Category", "field": "category", "align": "left"},
     {"name": "brand", "label": "Brand", "field": "brand", "align": "left"},
@@ -49,6 +50,67 @@ class PreviewService:
         self._preview_rows: List[Dict[str, Any]] = []
         self._statistics: Dict[str, Any] = {}
 
+    # ── Dataset population from canonical layer ───────────────
+
+    def load_dataset(self, dataset: Optional[CanonicalDataset] = None) -> None:
+        """Populate preview rows and statistics from the canonical dataset.
+
+        If dataset is None, derives it from the wrapped CanonicalService.
+        """
+        if dataset is None:
+            dataset = getattr(self._canonical, "_dataset", None)
+        if dataset is None:
+            self._preview_rows = []
+            self._statistics = {}
+            self._notify()
+            return
+
+        df = dataset.dataframe
+        if df is not None and not df.is_empty():
+            self._preview_rows = [
+                self._row_to_dict(row) for row in df.head(20).iter_rows(named=True)
+            ]
+            self._statistics = self._compute_statistics(df, dataset)
+        else:
+            self._preview_rows = []
+            self._statistics = {}
+        self._notify()
+
+    @staticmethod
+    def _row_to_dict(row: dict) -> Dict[str, Any]:
+        result = {}
+        for k, v in row.items():
+            if hasattr(v, "strftime"):
+                result[k] = v.strftime("%Y-%m-%d")
+            else:
+                result[k] = v
+        return result
+
+    @staticmethod
+    def _compute_statistics(df: pl.DataFrame, dataset: CanonicalDataset) -> Dict[str, Any]:
+        stats: Dict[str, Any] = {
+            "total_rows": df.height,
+        }
+        if "store" in df.columns:
+            stats["stores"] = df["store"].n_unique()
+        if "upc" in df.columns:
+            stats["upcs"] = df["upc"].n_unique()
+        if "category" in df.columns:
+            stats["categories"] = df["category"].n_unique()
+        if "brand" in df.columns:
+            stats["brands"] = df["brand"].n_unique()
+        if "department" in df.columns:
+            stats["departments"] = df["department"].n_unique()
+        if "date" in df.columns:
+            stats["date_range"] = f"{df['date'].min()} → {df['date'].max()}"
+        if df.height:
+            completeness_cols = [c for c in df.columns if c in df.columns]
+            non_null = sum(df[c].null_count() for c in completeness_cols) if completeness_cols else 0
+            stats["completeness"] = round((1 - non_null / max(len(completeness_cols) * df.height, 1)) * 100, 1)
+        else:
+            stats["completeness"] = 0.0
+        return stats
+
     # ── Pipeline ──────────────────────────────────────────────
 
     @property
@@ -62,12 +124,25 @@ class PreviewService:
     # ── Side-by-Side Comparison ───────────────────────────────
 
     def get_comparison_rows(self) -> List[Dict[str, Any]]:
-        return []
+        rows = []
+        for mapping in self._canonical.mappings.values():
+            if mapping.physical_column:
+                rows.append({
+                    "physical": mapping.physical_column,
+                    "business": mapping.canonical_name,
+                    "confidence": mapping.confidence,
+                    "source": mapping.source,
+                })
+        return rows
 
     # ── Business Dataset Preview ──────────────────────────────
 
     @property
     def preview_columns(self) -> List[Dict[str, Any]]:
+        dataset = getattr(self._canonical, "_dataset", None)
+        if dataset is not None and dataset.dataframe is not None:
+            return [{"name": c, "label": c, "field": c, "align": "left"}
+                    for c in dataset.dataframe.columns]
         return list(PREVIEW_COLUMNS)
 
     @property
@@ -87,7 +162,7 @@ class PreviewService:
         ignored = s["ignored"]
         conf = s["confidence"]
         missing = self._canonical.get_required_missing()
-        essentials = ["store", "upc", "description", "quantity", "sales", "date"]
+        essentials = ["store", "upc", "description", "quantity", "price", "date"]
 
         mapping_status = "pass" if mapped + ignored >= total_phys else "fail"
         mapping_detail = f"{mapped + ignored} of {total_phys} physical columns mapped or ignored" if total_phys else "No physical columns"
@@ -126,10 +201,19 @@ class PreviewService:
     @property
     def quality_metrics(self) -> Dict[str, Any]:
         s = self._canonical.get_summary()
+        mapped = s["mapped"]
+        missing = s["required_missing"]
+        confidence = s["confidence"]
+        if mapped > 0 and missing == 0 and confidence >= 0.8:
+            quality = "High"
+        elif mapped > 0 and missing == 0:
+            quality = "Medium"
+        else:
+            quality = "Review Required"
         return {
-            "overall_quality": "High",
-            "mapping_confidence": s["confidence"],
-            "required_coverage": f"{s['mapped'] - s['required_missing']} / {s['mapped']}",
+            "overall_quality": quality,
+            "mapping_confidence": confidence,
+            "required_coverage": f"{mapped - missing} / {mapped}",
             "optional_coverage": "5 / 7",
             "manual_mappings": sum(1 for m in self._canonical.mappings.values() if m.source == "user"),
             "auto_mappings": sum(1 for m in self._canonical.mappings.values() if m.source == "candidate"),
@@ -142,6 +226,8 @@ class PreviewService:
 
     @property
     def business_statistics(self) -> Dict[str, Any]:
+        if not self._statistics:
+            self.load_dataset()
         return dict(self._statistics)
 
     # ── Metadata ──────────────────────────────────────────────
