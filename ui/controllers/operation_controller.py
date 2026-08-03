@@ -1,6 +1,7 @@
 """Operation controller — bridges operation service to UI (Sprint 6A)."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
+
 from ui.services.operation_service import OperationService
 from ui.services.notification_service import NotificationService
 from dav_platform.core.contracts import ExecutionStep

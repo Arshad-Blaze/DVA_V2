@@ -1,6 +1,6 @@
 """Validation Layer — Metadata Collector."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from dav_platform.core.contracts import ValidationIssue
 

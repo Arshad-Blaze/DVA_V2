@@ -6,16 +6,10 @@ UI NEVER detects files — only visualizes detection results.
 
 from typing import Any, Dict, List, Optional, Callable
 from datetime import datetime
-from dataclasses import asdict
 
 from dav_platform.core.contracts import (
     IDataSource,
     DiscoveryResult,
-    FileType,
-    EncodingType,
-    RecordTypeInfo,
-    LayoutField,
-    DetectionStatistics,
 )
 from dav_platform.connection.local import LocalDataSource
 from dav_platform.detection.engine import DetectionEngine

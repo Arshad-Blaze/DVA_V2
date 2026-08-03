@@ -6,7 +6,7 @@ before proceeding to Requirement/Processing.
 
 from nicegui import ui
 from ui.widgets.cards import section_header, metric_card, empty_state
-from ui.shared import preview_svc, preview_ctrl, navigate_to
+from ui.shared import preview_ctrl, navigate_to
 from ui.workspaces.canonical.workspace import navigate_canonical
 from ui.widgets.guidance_bar import render_guidance
 
@@ -31,7 +31,6 @@ def set_navigation_handler(handler):
 def render():
     render_guidance("preview")
     ctrl = preview_ctrl()
-    svc = preview_svc()
 
     # ── Pipeline ──────────────────────────────────────────────
     render_pipeline(ctrl.pipeline_stages, ctrl.current_stage_index)

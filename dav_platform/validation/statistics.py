@@ -1,10 +1,6 @@
 """Validation Layer — Validation Statistics."""
 
-import time
-from typing import Any, Dict, List
-
 from dav_platform.core.contracts import (
-    ValidationIssue,
     ValidationResult,
     ValidationSeverity,
     ValidationStatistics,

@@ -5,7 +5,7 @@ Sprint 2.5: Shows recent projects from persistence, resume session.
 
 from nicegui import ui
 from ui.widgets.cards import info_card, metric_card, section_header
-from ui.shared import project_svc, session_svc, conn_svc, notify_svc
+from ui.shared import project_svc
 from ui.widgets.guidance_bar import render_guidance
 
 

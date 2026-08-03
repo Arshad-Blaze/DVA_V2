@@ -4,11 +4,9 @@ Produces a stable business schema independent of retailer format.
 Retailer-specific column names disappear after this layer.
 """
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List
 
 from dav_platform.core.contracts import (
-    CANONICAL_COLUMNS,
-    CanonicalDataset,
     ColumnMapping,
     DiscoveryResult,
 )
@@ -45,7 +43,7 @@ def build_business_schema(
 def get_schema_info(
     result: DiscoveryResult,
     mappings: List[ColumnMapping],
-) -> Dict[str, str]:
+) -> Dict[str, Any]:
     """Get schema information for metadata.
 
     Returns dict with schema details:

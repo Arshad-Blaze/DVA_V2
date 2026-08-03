@@ -1,8 +1,6 @@
 """Flush Layer — Connection Cleanup."""
 
-from typing import Any, Dict, List, Optional
-
-from dav_platform.flush.exceptions import ConnectionCleanupError
+from typing import Any, Dict, List
 
 
 class ConnectionCleanup:

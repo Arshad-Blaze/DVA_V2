@@ -11,24 +11,29 @@ def render_report_history(history: List[Dict[str, Any]]) -> None:
         if not history:
             ui.label("No report history available.").classes("text-sm text-gray-500")
             return
-        with ui.table(rows=history, row_key="execution_id").classes("w-full text-sm"):
-            with ui.thead():
-                with ui.tr():
-                    ui.th().text("Execution ID")
-                    ui.th().text("Generated")
-                    ui.th().text("Version")
-                    ui.th().text("Format")
-                    ui.th().text("Status")
-                    ui.th().text("Reports")
-            with ui.tbody():
-                for h in history:
-                    with ui.tr():
-                        ui.td().text(h.get("execution_id", "—"))
-                        ui.td().text(h.get("generated", "—"))
-                        ui.td().text(h.get("version", "—"))
-                        ui.td().text(h.get("format", "—"))
-                        with ui.td():
-                            status = h.get("status", "—")
-                            color = "green" if status == "completed" else "orange"
-                            ui.badge(status, color=color)
-                        ui.td().text(str(h.get("reports", 0)))
+        columns = [
+            {"name": "execution_id", "label": "Execution ID", "field": "execution_id", "sortable": True},
+            {"name": "generated", "label": "Generated", "field": "generated"},
+            {"name": "version", "label": "Version", "field": "version"},
+            {"name": "format", "label": "Format", "field": "format"},
+            {"name": "status", "label": "Status", "field": "status"},
+            {"name": "reports", "label": "Reports", "field": "reports"},
+        ]
+        rows = [
+            {
+                "execution_id": h.get("execution_id", "—"),
+                "generated": h.get("generated", "—"),
+                "version": h.get("version", "—"),
+                "format": h.get("format", "—"),
+                "status": h.get("status", "—"),
+                "reports": str(h.get("reports", 0)),
+            }
+            for h in history
+        ]
+        with ui.table(rows=rows, columns=columns, row_key="execution_id").classes("w-full text-sm") as table:
+            table.add_slot(
+                "body-cell-status",
+                '<td :props="props">'
+                '<q-badge :color="props.value === \'completed\' ? \'green\' : \'orange\'" :label="props.value" />'
+                "</td>",
+            )

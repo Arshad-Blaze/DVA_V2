@@ -2,7 +2,7 @@
 
 from typing import Any, Dict
 from nicegui import ui
-from ui.widgets.cards import section_header, metric_card
+from ui.widgets.cards import section_header
 
 
 STATUS_COLORS = {"passed": "green", "failed": "red", "warning": "orange"}

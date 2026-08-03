@@ -2,7 +2,7 @@
 
 from nicegui import ui
 from ui.widgets.cards import section_header
-from ui.shared import theme_svc, context
+from ui.shared import theme_svc
 from ui.widgets.guidance_bar import render_guidance
 
 

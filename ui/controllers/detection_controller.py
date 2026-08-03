@@ -1,6 +1,6 @@
 """Detection controller — bridges detection service to UI."""
 
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from ui.services.detection_service import DetectionService
 from ui.services.notification_service import NotificationService

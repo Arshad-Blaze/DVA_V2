@@ -8,9 +8,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 from dav_platform.core.contracts import (
-    CandidateMapping,
     DiscoveryResult,
-    RecordTypeInfo,
 )
 
 

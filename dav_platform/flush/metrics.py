@@ -1,6 +1,6 @@
 """Flush Layer — Metrics Collector."""
 
-from typing import Any, Dict, List, Optional
+from typing import Dict
 
 from dav_platform.core.contracts import ExecutionMetrics
 

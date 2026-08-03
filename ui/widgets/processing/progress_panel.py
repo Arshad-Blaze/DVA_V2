@@ -1,6 +1,5 @@
 """Progress panel widget (Sprint 6B)."""
 
-from typing import Any, Dict
 from nicegui import ui
 from ui.widgets.cards import section_header, metric_card
 

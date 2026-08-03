@@ -6,7 +6,7 @@ Orchestrates report generation and export.
 import json
 import os
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import polars as pl
 
@@ -14,7 +14,6 @@ from dav_platform.core.contracts import (
     ExecutionMetadata,
     OutputArtifacts,
     OutputConfig,
-    OutputStatistics,
     ProcessingStatistics,
     ValidationReportData,
 )
@@ -24,7 +23,6 @@ from dav_platform.output.manifest import ManifestBuilder
 from dav_platform.output.metadata import OutputMetadataCollector
 from dav_platform.output.reports import ReportBuilder
 from dav_platform.output.statistics import OutputStatisticsEngine
-from dav_platform.output.exceptions import ExportError, MissingInputError
 
 
 class OutputEngine:

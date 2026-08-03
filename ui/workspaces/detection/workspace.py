@@ -5,11 +5,11 @@ confidence dashboard, manual overrides, detection timeline.
 """
 
 from nicegui import ui
-from ui.widgets.cards import section_header, info_card, metric_card
+from ui.widgets.cards import section_header
 from ui.widgets.detection import (
     confidence_gauge, confidence_circle, detection_result_card,
-    warning_banner, explanation_panel, timeline_view,
-    raw_preview_viewer, connection_summary_card,
+    warning_banner, timeline_view,
+    raw_preview_viewer,
 )
 from ui.shared import detection_svc, detection_ctrl, conn_svc
 from ui.widgets.guidance_bar import render_guidance
@@ -63,7 +63,6 @@ def _render_raw_file_preview():
             ui.label(f"File: {svc.selected_file or 'None'}").classes("text-sm font-medium")
         lines = []
         if svc.result and svc.result.raw_preview is not None:
-            import polars as pl
             df = svc.result.raw_preview
             lines = [",".join(str(v) for v in row) for row in df.iter_rows()]
         raw_preview_viewer(lines)

@@ -1,7 +1,6 @@
 """Processing Engine — top-level orchestrator."""
 import time
 from typing import Optional, List
-import polars as pl
 from dav_platform.core.contracts import (
     CanonicalDataset, ProcessingConfig, ProcessingResult,
     AggregationResult, CalculationResult, ProcessingStatistics,

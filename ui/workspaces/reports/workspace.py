@@ -16,7 +16,6 @@ from ui.widgets.reports.chart_card import render_chart_card
 from ui.widgets.reports.drill_down import render_drill_down
 from ui.widgets.reports.export_center import render_export_center
 from ui.widgets.reports.report_history import render_report_history
-from ui.widgets.reports.status_bar import render_status_bar
 
 
 def render():

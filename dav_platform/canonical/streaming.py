@@ -7,7 +7,7 @@ This module does NOT parse files directly.
 It receives pre-parsed chunks and applies canonical transformations.
 """
 
-from typing import Dict, Generator, Optional
+from typing import Dict, Generator
 
 import polars as pl
 

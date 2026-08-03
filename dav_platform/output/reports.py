@@ -12,7 +12,6 @@ from dav_platform.core.contracts import (
     OutputConfig,
     ProcessingStatistics,
     ValidationReportData,
-    ValidationStatistics,
 )
 from dav_platform.output.templates import (
     BottomStoresTemplate,

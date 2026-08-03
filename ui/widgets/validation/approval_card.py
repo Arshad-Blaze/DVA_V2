@@ -1,6 +1,6 @@
 """Approval card widget for Validation Center (Sprint 7)."""
 
-from typing import Any, Callable
+from typing import Callable
 from nicegui import ui
 from ui.widgets.cards import section_header
 

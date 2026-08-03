@@ -8,7 +8,6 @@ from dav_platform.core.contracts import (
     ExecutionState,
     ExecutionStepResult,
 )
-from dav_platform.operations.exceptions import StepExecutionError
 from dav_platform.operations.retry import RetryPolicy, RetryState
 from dav_platform.operations.logging import ExecutionLogger
 

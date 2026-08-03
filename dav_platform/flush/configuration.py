@@ -1,6 +1,6 @@
 """Flush Layer — Configuration Builder."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from dav_platform.core.contracts import FlushConfig
 

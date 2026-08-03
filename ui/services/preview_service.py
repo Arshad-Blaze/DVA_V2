@@ -7,11 +7,10 @@ Never maps, validates, or transforms data.
 """
 
 from typing import Any, Callable, Dict, List, Optional
-from dataclasses import dataclass, field
 
 import polars as pl
 
-from dav_platform.core.contracts import CANONICAL_COLUMNS, ColumnMapping, CanonicalMetadata, CanonicalDataset
+from dav_platform.core.contracts import CanonicalMetadata, CanonicalDataset
 
 
 PIPELINE_STAGES = [

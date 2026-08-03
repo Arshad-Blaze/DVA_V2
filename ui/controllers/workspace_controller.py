@@ -1,7 +1,7 @@
 """Workspace controller — manages workspace lifecycle and content."""
 
 import importlib
-from typing import Any, Callable, Dict, Optional, Tuple, Union
+from typing import Callable, Dict, Optional, Tuple, Union
 
 from nicegui import ui
 from ui.services.session_service import SessionService

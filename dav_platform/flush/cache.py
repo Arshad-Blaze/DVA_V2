@@ -3,8 +3,6 @@
 import logging
 from typing import Any, Dict, List, Optional
 
-from dav_platform.flush.exceptions import CacheCleanupError
-
 logger = logging.getLogger(__name__)
 
 

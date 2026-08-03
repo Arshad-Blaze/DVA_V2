@@ -1,6 +1,6 @@
 """Output Layer — Configuration Builder."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 from dav_platform.core.contracts import OutputConfig
 

@@ -2,7 +2,6 @@
 
 from typing import Any, Callable, Dict, List, Optional
 
-from nicegui import ui
 from ui.services.project_service import ProjectService
 from ui.services.notification_service import NotificationService
 

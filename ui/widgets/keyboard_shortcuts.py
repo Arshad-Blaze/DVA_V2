@@ -1,5 +1,4 @@
-from typing import Dict, Callable, Optional
-from nicegui import ui
+from typing import Dict
 
 
 DEFAULT_SHORTCUTS = {

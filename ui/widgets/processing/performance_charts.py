@@ -1,6 +1,6 @@
 """Performance charts widget (Sprint 6B)."""
 
-from typing import Any, Dict, List
+from typing import Dict, List
 from nicegui import ui
 from ui.widgets.cards import section_header
 

@@ -1,5 +1,4 @@
 """Reusable guidance bar widget for workspace guidance."""
-from typing import Optional
 from nicegui import ui
 from ui import shared
 
@@ -9,8 +8,6 @@ def render_guidance(workspace_id: str) -> None:
     guidance = guidance_svc.get_guidance(workspace_id)
     if not guidance:
         return
-    
-    nav_svc = shared.nav_svc()
     
     with ui.card().classes("w-full p-4 mb-4 bg-blue-50 border border-blue-200"):
         with ui.row().classes("w-full items-center justify-between"):

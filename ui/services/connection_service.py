@@ -226,7 +226,7 @@ class ConnectionService:
                     "path": e.path,
                     "is_dir": e.is_dir,
                     "size": e.size or 0,
-                    "modified": datetime.fromtimestamp(e.modified) if e.modified and _is_number(e.modified) else None,
+                    "modified": datetime.fromtimestamp(float(e.modified)) if e.modified and _is_number(e.modified) else None,
                     "ext": Path(e.name).suffix if not e.is_dir else "",
                 }
                 for e in entries

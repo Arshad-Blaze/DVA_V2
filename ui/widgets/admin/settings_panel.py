@@ -26,10 +26,8 @@ def render_settings_panel(
     with ui.card().classes("w-full p-4"):
         with ui.tabs().classes("w-full") as tabs:
             section_keys = ["application", "theme", "workspace", "preferences", "reports", "notifications", "shortcuts"]
-            tab_map = {}
             for key in section_keys:
-                tab = ui.tab(SECTION_LABELS.get(key, key.title()), icon="settings" if key == "application" else None)
-                tab_map[tab.name] = key
+                ui.tab(SECTION_LABELS.get(key, key.title()), icon="settings" if key == "application" else None)
 
         with ui.tab_panels(tabs, value=section_keys[0]).classes("w-full"):
             for key in section_keys:

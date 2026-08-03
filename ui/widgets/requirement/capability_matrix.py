@@ -1,6 +1,6 @@
 """Capability matrix widget."""
 
-from typing import Any, Dict
+from typing import Dict
 from nicegui import ui
 from ui.widgets.cards import section_header
 from dav_platform.core.contracts import CapabilityMatrix

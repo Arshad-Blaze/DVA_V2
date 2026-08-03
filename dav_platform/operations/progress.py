@@ -4,7 +4,7 @@ import time
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from dav_platform.core.contracts import ExecutionStep, ExecutionState
+from dav_platform.core.contracts import ExecutionState
 
 
 @dataclass

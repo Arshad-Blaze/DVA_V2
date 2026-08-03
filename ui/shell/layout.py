@@ -27,11 +27,11 @@ def create_layout(
 
     create_header(session_ctrl, session_svc)
 
-    with ui.left_drawer(value=True).classes("bg-gray-900 text-white") as left_drawer:
+    with ui.left_drawer(value=True).classes("bg-gray-900 text-white"):
         ui.label("Navigation").classes("text-xs uppercase tracking-wider text-gray-400 px-4 pt-4 pb-2")
         create_sidebar(nav_ctrl, on_navigate)
 
-    with ui.right_drawer(value=True).classes("bg-gray-50") as right_drawer:
+    with ui.right_drawer(value=True).classes("bg-gray-50"):
         ui.label("Inspector").classes("text-xs uppercase tracking-wider text-gray-400 px-4 pt-4 pb-2")
         with ui.column().classes("px-2 gap-3 w-full"):
             with ui.card().classes("w-full p-3"):

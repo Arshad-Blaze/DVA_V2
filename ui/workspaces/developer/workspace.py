@@ -4,12 +4,10 @@ from ui import shared
 
 
 def render() -> None:
-    dev_svc = shared.admin_svc()
     context = shared.context()
     persistence = shared.persistence()
     storage = shared.storage()
     nav_svc = shared.nav_svc()
-    notify_svc = shared.notify_svc()
     theme_svc = shared.theme_svc()
 
     ui.label("Developer Mode").classes("text-2xl font-bold")

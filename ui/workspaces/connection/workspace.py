@@ -6,7 +6,7 @@ Supports Create, Edit, Delete, Duplicate, Test, Browse.
 
 from nicegui import ui
 from ui.widgets.cards import section_header, empty_state
-from ui.services.connection_service import ConnectionType, CONNECTION_TYPES, CONNECTION_FORMS
+from ui.services.connection_service import ConnectionType, CONNECTION_TYPES
 from ui.shared import conn_svc, conn_ctrl
 from ui.widgets.guidance_bar import render_guidance
 
@@ -213,7 +213,7 @@ def _render_connections():
         tinfo = conn_svc().get_type_info(c["conn_type"])
         is_connected = c["status"] == "connected"
 
-        with ui.card().classes("w-full p-4 cursor-pointer").props("clickable") as card:
+        with ui.card().classes("w-full p-4 cursor-pointer").props("clickable"):
             with ui.row().classes("items-center justify-between w-full"):
                 with ui.row().classes("items-center gap-3"):
                     ui.icon(tinfo["icon"], color=tinfo["color"]).classes("text-2xl")

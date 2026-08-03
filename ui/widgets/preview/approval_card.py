@@ -33,7 +33,7 @@ def render_approval_panel(
         else:
             with ui.row().classes("gap-2"):
                 ui.button("Approve", on_click=on_approve, icon="check").props(
-                    "flat" if not can_approve else "outline"
-                ).classes("text-sm").bind_enabled_from(can_approve, lambda v: v)
+                    "disabled flat" if not can_approve else "outline"
+                ).classes("text-sm")
                 ui.button("Reject", on_click=on_reject, icon="close", color="red").props("flat").classes("text-sm")
                 ui.button("Back to Mapping", on_click=on_back, icon="arrow_back").props("flat").classes("text-sm")

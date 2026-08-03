@@ -3,7 +3,6 @@
 from typing import Any, Dict, List, Optional
 
 from dav_platform.core.contracts import (
-    ValidationIssue,
     ValidationResult,
     ValidationReportData,
     ValidationStatistics,

@@ -4,7 +4,7 @@ Slices fixed-width records into fields using Detection's layout intelligence.
 Processing must never perform fixed-width parsing.
 """
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import polars as pl
 
@@ -18,7 +18,7 @@ def transform_fixed_width(
     header_prefix: Optional[str] = None,
     trailer_prefix: Optional[str] = None,
     data_start_line: int = 0,
-) -> List[Dict[str, str]]:
+) -> List[Dict[str, Any]]:
     """Transform fixed-width lines into row dicts using layout fields.
 
     Args:
@@ -32,7 +32,7 @@ def transform_fixed_width(
     Returns:
         List of row dicts with field values trimmed
     """
-    rows = []
+    rows: List[Dict[str, Any]] = []
 
     for i, line in enumerate(lines):
         # Skip header/trailer records

@@ -4,7 +4,6 @@ Sprint 2A: Create, open, rename, delete projects.
 Sprint 2.5: Persistence auto-save via shared ProjectService.
 """
 
-from datetime import datetime
 from nicegui import ui
 from ui.widgets.cards import info_card, section_header, empty_state
 from ui.shared import project_svc, project_ctrl
@@ -83,7 +82,7 @@ def _render_projects_list():
     current_pid = project_svc().current_project_id
     for p in projects:
         is_current = p["id"] == current_pid
-        with ui.card().classes("w-full p-4 cursor-pointer card-hover").props("clickable") as card:
+        with ui.card().classes("w-full p-4 cursor-pointer card-hover").props("clickable"):
             with ui.row().classes("items-center justify-between w-full"):
                 with ui.row().classes("items-center gap-3"):
                     ui.icon("folder", color="primary").classes("text-2xl")

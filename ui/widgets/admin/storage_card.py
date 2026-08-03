@@ -2,7 +2,7 @@
 
 from typing import Any, Dict
 from nicegui import ui
-from ui.widgets.cards import section_header, metric_card
+from ui.widgets.cards import section_header
 
 
 def render_storage_card(s: Dict[str, Any]) -> None:
@@ -12,8 +12,7 @@ def render_storage_card(s: Dict[str, Any]) -> None:
         pct = (s.get("total_used_mb", 0) / max(total, 1)) * 100
         with ui.row().classes("w-full items-center gap-4 mb-4"):
             ui.label(f"Used: {s.get('total_used_mb', 0):.1f} MB").classes("text-sm")
-            with ui.progress(value=pct / 100, size="sm").props("rounded").classes("flex-1"):
-                pass
+            ui.linear_progress(value=pct / 100, size="sm").props("rounded").classes("flex-1")
             ui.label(f"Available: {s.get('total_available_mb', 0):.0f} MB").classes("text-sm text-gray-500")
         with ui.grid(columns=3).classes("w-full gap-2"):
             for key in ["projects", "reports", "cache", "logs", "exports", "temp"]:

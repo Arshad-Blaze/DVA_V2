@@ -4,11 +4,9 @@ When demo mode is active, demo data is loaded from the /demo directory.
 When demo mode exits, all temporary demo data is cleaned up.
 """
 import os
-import json
 import shutil
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Callable
-from datetime import datetime
 
 DEMO_DIR = Path(__file__).parent.parent.parent / "demo"
 
@@ -67,7 +65,7 @@ class DemoService:
                 self._demo_project_id = project["id"]
 
             if self._conn_svc:
-                conn = self._conn_svc.add_connection(
+                self._conn_svc.add_connection(
                     name="Demo Connection",
                     conn_type="local",
                     path=str(self._temp_dir),

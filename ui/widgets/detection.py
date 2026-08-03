@@ -34,7 +34,7 @@ def detection_result_card(label: str, value: str, confidence: float,
     with ui.card().classes("w-full p-4") as card:
         with ui.row().classes("items-center justify-between w-full"):
             ui.label(label).classes("text-sm font-semibold text-gray-600")
-            status_badge = _confidence_badge(confidence)
+            _confidence_badge(confidence)
 
         ui.label(value).classes("text-xl font-bold mt-1")
 

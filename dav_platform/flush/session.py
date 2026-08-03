@@ -2,8 +2,6 @@
 
 from typing import Any, Dict, List
 
-from dav_platform.flush.exceptions import SessionCleanupError
-
 
 class SessionCleanup:
     """Resets execution context, session state, progress trackers."""

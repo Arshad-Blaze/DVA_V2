@@ -3,14 +3,12 @@
 Sprint 4A: Column mapping, business schema builder, quantity/UOM resolution.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import List
 
 from nicegui import ui
-from ui.widgets.cards import section_header, info_card, metric_card, status_badge, empty_state
+from ui.widgets.cards import section_header, status_badge
 from ui.shared import canonical_svc, canonical_ctrl, detection_svc, navigate_to
 from ui.widgets.guidance_bar import render_guidance
-
-from dav_platform.core.contracts import CANONICAL_COLUMNS, ColumnMapping
 
 # ──────────────────────────────────────────────────────────────────
 # Section 1 — Detection Summary
@@ -254,7 +252,6 @@ def _render_transformation_summary():
 
 def _render_actions():
     ui.space().classes("h-4")
-    summary = canonical_svc().get_summary()
     missing = canonical_svc().get_required_missing()
 
     with ui.row().classes("w-full items-center justify-between p-4 bg-gray-50 rounded-lg"):

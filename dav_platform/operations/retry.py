@@ -1,7 +1,7 @@
 """Retry policy for step execution."""
 
 from dataclasses import dataclass, field
-from typing import Callable, Optional
+from typing import Optional
 
 
 @dataclass

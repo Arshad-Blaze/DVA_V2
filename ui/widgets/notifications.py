@@ -3,7 +3,6 @@
 from typing import Any, Dict
 
 from nicegui import ui
-from ui.services.notification_service import NotificationType
 
 
 def notification_banner(entry: Dict[str, Any]) -> ui.html:

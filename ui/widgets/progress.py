@@ -1,7 +1,5 @@
 """Progress indicator widgets."""
 
-from typing import Optional
-
 from nicegui import ui
 
 
@@ -16,7 +14,7 @@ def progress_bar(value: float = 0.0, label: str = "", show_percentage: bool = Tr
     with ui.row().classes("w-full items-center gap-3") as row:
         if label:
             ui.label(label).classes("text-sm min-w-24")
-        bar = ui.linear_progress(value=value, size="20px").classes("flex-1")
+        ui.linear_progress(value=value, size="20px").classes("flex-1")
         if show_percentage:
             ui.label(f"{value * 100:.0f}%").classes("text-xs font-mono min-w-10")
     return row

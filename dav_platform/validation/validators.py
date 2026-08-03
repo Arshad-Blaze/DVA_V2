@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 
 import polars as pl
 
-from dav_platform.core.contracts import ValidationIssue, ValidationSeverity, ValidationRule
+from dav_platform.core.contracts import ValidationIssue, ValidationSeverity
 from dav_platform.validation.rules import BaseValidationRule, register_rule
 
 

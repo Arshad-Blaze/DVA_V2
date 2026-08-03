@@ -24,7 +24,6 @@ class WelcomeWizard:
                 self._render_navigation()
 
     def _render_header(self) -> None:
-        step = self._welcome.current_step_info
         total = self._welcome.total_estimated_time
         with ui.column().classes("w-full"):
             ui.label("Welcome to DVA Platform v2").classes("text-2xl font-bold")

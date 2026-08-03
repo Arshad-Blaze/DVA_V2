@@ -9,7 +9,7 @@ Example:
     One canonical row with all data combined.
 """
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import polars as pl
 
@@ -22,7 +22,7 @@ def flatten_multiline(
     record_types: Optional[List[RecordTypeInfo]] = None,
     header_prefix: Optional[str] = None,
     trailer_prefix: Optional[str] = None,
-) -> List[Dict[str, str]]:
+) -> List[Dict[str, Any]]:
     """Flatten multiline records into single-row dicts.
 
     Continuation lines (no prefix) are appended to the previous record's
@@ -51,8 +51,8 @@ def flatten_multiline(
     if trailer_prefix:
         known_prefixes.add(trailer_prefix)
 
-    rows: List[Dict[str, str]] = []
-    current_row: Optional[Dict[str, str]] = None
+    rows: List[Dict[str, Any]] = []
+    current_row: Optional[Dict[str, Any]] = None
     current_fields: List[str] = []
 
     for line in lines:
@@ -61,13 +61,7 @@ def flatten_multiline(
             continue
 
         # Check if this line starts with a known prefix
-        is_primary = False
-        matched_prefix = None
-        for prefix in known_prefixes:
-            if stripped.startswith(prefix):
-                is_primary = True
-                matched_prefix = prefix
-                break
+        is_primary = any(stripped.startswith(prefix) for prefix in known_prefixes)
 
         if is_primary:
             # Save previous row if exists
@@ -99,7 +93,7 @@ def _parse_line_fields(line: str, delimiter: Optional[str]) -> List[str]:
     return [line]
 
 
-def _finalize_row(row: Dict[str, str], fields: List[str], delimiter: Optional[str]) -> None:
+def _finalize_row(row: Dict[str, Any], fields: List[str], delimiter: Optional[str]) -> None:
     """Finalize a row with all accumulated fields."""
     for i, value in enumerate(fields):
         row[f"field_{i}"] = value

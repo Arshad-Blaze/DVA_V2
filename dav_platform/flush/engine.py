@@ -8,19 +8,15 @@ from typing import Any, Dict, List, Optional
 
 from dav_platform.core.contracts import (
     CleanupSummary,
-    ExecutionMetadata,
-    ExecutionMetrics,
     ExecutionResult,
     ExportManifest,
     FlushConfig,
     FlushResult,
-    LifecycleSummary,
     OutputArtifacts,
 )
 from dav_platform.flush.audit import AuditTrail
 from dav_platform.flush.cache import CacheManager
 from dav_platform.flush.cleanup import CleanupManager
-from dav_platform.flush.configuration import FlushConfigBuilder
 from dav_platform.flush.connections import ConnectionCleanup
 from dav_platform.flush.metrics import MetricsCollector
 from dav_platform.flush.resources import ResourceManager
@@ -95,7 +91,6 @@ class FlushEngine:
         start = time.time()
         all_warnings: List[str] = []
         all_errors: List[str] = []
-        ctx = context or {}
 
         self._audit.start()
 

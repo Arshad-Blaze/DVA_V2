@@ -5,7 +5,7 @@ Never creates execution plans or calculates estimates.
 """
 
 from typing import Any, Callable, Dict, List, Optional
-from dav_platform.core.contracts import ExecutionStep, OperationContext, ProcessingMode
+from dav_platform.core.contracts import ExecutionStep, OperationContext
 
 PIPELINE_STAGES_DEMO = [
     {"id": "load", "label": "Load", "icon": "upload_file", "purpose": "Load canonical dataset from mapped source", "duration": "~30 sec", "dependencies": "Project, Connection, Detection, Mapping"},

@@ -1,7 +1,5 @@
 """Execution state management."""
 
-from typing import Optional
-
 from dav_platform.core.contracts import ExecutionState
 
 

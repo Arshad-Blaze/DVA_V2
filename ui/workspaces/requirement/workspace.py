@@ -5,9 +5,8 @@ execution plan, readiness dashboard, and confirmation.
 """
 
 from nicegui import ui
-from ui.widgets.cards import section_header, metric_card, empty_state
-from ui.shared import req_svc, req_ctrl, navigate_to
-from ui.workspaces.canonical.workspace import navigate_canonical
+from ui.widgets.cards import section_header, empty_state
+from ui.shared import req_ctrl, navigate_to
 from ui.widgets.guidance_bar import render_guidance
 
 from ui.widgets.requirement.goal_card import render_goal_selection

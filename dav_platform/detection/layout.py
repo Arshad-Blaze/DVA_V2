@@ -3,8 +3,7 @@
 Analyzes character positions to suggest column boundaries.
 """
 
-from collections import Counter
-from typing import List, Optional
+from typing import List
 
 from dav_platform.core.contracts import LayoutField
 

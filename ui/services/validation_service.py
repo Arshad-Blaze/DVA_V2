@@ -10,15 +10,10 @@ Never validates data — only visualizes results.
 import csv
 import io
 from typing import Any, Callable, Dict, List, Optional
-from dataclasses import dataclass, field
 
 from dav_platform.core.contracts import (
     ValidationSeverity,
-    ValidationIssue,
     ValidationResult,
-    ValidationStatistics,
-    ValidationRule,
-    ValidationSummary,
 )
 from dav_platform.validation.engine import ValidationEngine
 

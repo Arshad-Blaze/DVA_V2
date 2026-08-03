@@ -1,6 +1,6 @@
 """Streaming processing for large datasets."""
 import time
-from typing import Iterator, List, Optional, Callable
+from typing import Iterator, List, Callable
 import polars as pl
 from dav_platform.core.contracts import CanonicalDataset, ProcessingConfig, ProcessingResult
 

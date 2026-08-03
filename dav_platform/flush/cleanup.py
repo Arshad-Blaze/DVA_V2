@@ -4,8 +4,6 @@ import os
 import shutil
 from typing import Any, Dict, List, Optional
 
-from dav_platform.flush.exceptions import CleanupError
-
 
 class CleanupManager:
     """Orchestrates cleanup of temporary files, directories, and exports."""

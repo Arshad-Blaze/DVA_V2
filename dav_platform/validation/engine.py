@@ -14,18 +14,16 @@ logger = logging.getLogger(__name__)
 from dav_platform.core.contracts import (
     AggregationResult,
     CalculationResult,
-    ProcessingConfig,
     ProcessingResult,
     ProcessingStatistics,
     ValidationConfig,
     ValidationIssue,
+    ValidationReportData,
     ValidationResult,
     ValidationRule,
     ValidationSeverity,
-    ValidationSummary,
 )
-from dav_platform.validation.configuration import ValidationConfigBuilder
-from dav_platform.validation.exceptions import ConfigurationError, InputError, RuleExecutionError
+from dav_platform.validation.exceptions import RuleExecutionError
 from dav_platform.validation.metadata import MetadataCollector
 from dav_platform.validation.report import ValidationReportBuilder
 from dav_platform.validation.rules import BaseValidationRule, RuleRegistry, get_registry
@@ -348,7 +346,7 @@ class ValidationEngine:
             metadata={"tolerance": tolerance, "execution_time_seconds": execution_time},
         )
 
-    def build_report(self, result: ValidationResult) -> "ValidationReportData":
+    def build_report(self, result: ValidationResult) -> ValidationReportData:
         """Build a structured report from a ValidationResult."""
         return self._report_builder.build(result)
 

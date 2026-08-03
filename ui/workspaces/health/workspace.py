@@ -1,6 +1,6 @@
 """System Health Dashboard workspace — shows health of all subsystems."""
 from nicegui import ui
-from typing import List
+from typing import List, Optional
 
 
 def _health_badge(status: str) -> None:
@@ -11,7 +11,7 @@ def _health_badge(status: str) -> None:
     ui.label(status.upper()).classes(f"text-xs font-bold px-2 py-1 rounded {color}")
 
 
-def _health_card(title: str, status: str, details: List[str] = None) -> None:
+def _health_card(title: str, status: str, details: Optional[List[str]] = None) -> None:
     with ui.card().classes("w-full p-4"):
         with ui.row().classes("w-full justify-between items-center"):
             ui.label(title).classes("text-lg font-semibold")

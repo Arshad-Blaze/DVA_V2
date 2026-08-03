@@ -1,6 +1,5 @@
 """Execution summary widget for Validation Center (Sprint 7)."""
 
-from typing import Any, Dict
 from nicegui import ui
 from ui.widgets.cards import section_header, metric_card
 from ui.shared import proc_svc

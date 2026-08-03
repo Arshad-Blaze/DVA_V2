@@ -6,8 +6,7 @@ suggested actions, timeline, and approval workflow.
 """
 
 from nicegui import ui
-from ui.widgets.cards import section_header, metric_card, empty_state
-from ui.shared import val_svc, val_ctrl, navigate_to
+from ui.shared import val_ctrl, navigate_to
 from ui.widgets.guidance_bar import render_guidance
 
 from ui.widgets.validation.execution_summary import render_execution_summary

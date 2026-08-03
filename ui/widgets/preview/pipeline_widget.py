@@ -24,5 +24,4 @@ def render_pipeline(stages: List[Dict[str, Any]], current_index: int) -> None:
                     ui.icon(icon, color="primary" if is_current else ("green" if is_completed else "grey")).classes("text-2xl")
                     ui.label(stage["label"]).classes(f"text-xs text-center {cls}")
                 if i < len(stages) - 1:
-                    connector_cls = "text-green-500" if is_completed else "text-gray-300"
                     ui.icon("chevron_right", color="grey").classes("text-lg")

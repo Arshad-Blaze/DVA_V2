@@ -1,6 +1,6 @@
 """Execution timeline widget."""
 
-from typing import Any, Dict, List
+from typing import List
 from nicegui import ui
 from ui.widgets.cards import section_header
 from dav_platform.core.contracts import ExecutionStep
@@ -17,8 +17,8 @@ def render_execution_timeline(steps: List[ExecutionStep]) -> None:
         for i, step in enumerate(steps):
             with ui.row().classes("items-start gap-3"):
                 with ui.column().classes("items-center min-w-8"):
-                    num = ui.badge(str(step.step_number), color="primary" if step.required else "grey").classes("text-xs")
-                with ui.card().classes("flex-1 p-3 border-l-2").props(f"flat bordered"):
+                    ui.badge(str(step.step_number), color="primary" if step.required else "grey").classes("text-xs")
+                with ui.card().classes("flex-1 p-3 border-l-2").props("flat bordered"):
                     with ui.row().classes("items-center justify-between"):
                         ui.label(step.action).classes("text-sm font-semibold")
                         if not step.required:

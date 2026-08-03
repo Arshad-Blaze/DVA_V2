@@ -4,7 +4,7 @@ All workspaces and controllers import from here to access the same
 service instances that app.py creates. Prevents duplicate state.
 """
 
-from typing import Any, Callable, Dict, List, Optional
+from typing import Callable, Optional
 
 from ui.services.project_service import ProjectService
 from ui.services.connection_service import ConnectionService

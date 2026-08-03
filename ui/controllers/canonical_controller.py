@@ -1,6 +1,6 @@
 """Canonical controller — bridges canonical service to UI."""
 
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List
 
 from ui.services.canonical_service import CanonicalService
 from ui.services.notification_service import NotificationService

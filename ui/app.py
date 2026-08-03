@@ -1,7 +1,6 @@
 from nicegui import app, ui
 
 from ui import shared
-from ui.controllers.workspace_controller import WorkspaceController
 from ui.shell.layout import create_layout
 from ui.shell.workspace_manager import WorkspaceManager
 from ui.styles.custom import CUSTOM_CSS

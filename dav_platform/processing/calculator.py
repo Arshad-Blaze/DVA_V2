@@ -6,7 +6,7 @@ All calculations operate on canonical fields using vectorized polars operations.
 
 import logging
 import time
-from typing import List, Optional
+from typing import List
 
 import polars as pl
 

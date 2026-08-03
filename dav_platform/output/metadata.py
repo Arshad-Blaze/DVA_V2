@@ -1,6 +1,6 @@
 """Output Layer — Metadata Collector."""
 
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 
 class OutputMetadataCollector:

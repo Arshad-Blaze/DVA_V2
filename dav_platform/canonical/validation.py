@@ -5,9 +5,7 @@ Returns structured validation results. Does not crash on recoverable issues.
 """
 
 from dataclasses import dataclass, field
-from typing import List, Optional
-
-import polars as pl
+from typing import Dict, List
 
 from dav_platform.core.contracts import CanonicalDataset, ColumnMapping
 
@@ -50,7 +48,7 @@ def validate_canonical(dataset: CanonicalDataset) -> CanonicalValidationResult:
         result.warnings.append(f"Missing mandatory columns: {', '.join(sorted(missing))}")
 
     # Check for duplicate mappings
-    canonical_counts = {}
+    canonical_counts: Dict[str, int] = {}
     for m in dataset.column_mappings:
         canonical_counts[m.canonical_name] = canonical_counts.get(m.canonical_name, 0) + 1
 

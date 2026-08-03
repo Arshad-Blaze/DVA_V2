@@ -1,6 +1,6 @@
 """Reusable card widgets."""
 
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 from nicegui import ui
 

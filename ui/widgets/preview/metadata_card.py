@@ -1,6 +1,5 @@
 """Metadata explorer widget."""
 
-from typing import Any, Dict
 from nicegui import ui
 from ui.widgets.cards import section_header
 from dav_platform.core.contracts import CanonicalMetadata

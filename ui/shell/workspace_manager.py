@@ -3,8 +3,6 @@
 Handles workspace content switching via the workspace controller.
 """
 
-from typing import Callable, Dict
-
 from nicegui import ui
 from ui.controllers.workspace_controller import WorkspaceController
 

@@ -5,8 +5,8 @@ logs, metrics, performance charts, and results.
 """
 
 from nicegui import ui
-from ui.widgets.cards import section_header, metric_card, empty_state
-from ui.shared import proc_svc, proc_ctrl, navigate_to
+from ui.widgets.cards import section_header
+from ui.shared import proc_ctrl
 from ui.widgets.guidance_bar import render_guidance
 
 from ui.widgets.processing.live_pipeline import render_live_pipeline

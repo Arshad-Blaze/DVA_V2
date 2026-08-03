@@ -5,7 +5,7 @@ Only orchestrates — never makes business decisions.
 """
 
 import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 from dav_platform.core.contracts import (
     CanonicalDataset,
@@ -14,15 +14,13 @@ from dav_platform.core.contracts import (
     ExecutionState,
     ExecutionStepResult,
     OperationContext,
-    OperationLog,
 )
-from dav_platform.operations.dispatcher import dispatch_step, get_handler
+from dav_platform.operations.dispatcher import get_handler
 from dav_platform.operations.executor import execute_step
 from dav_platform.operations.state import StateManager
 from dav_platform.operations.progress import ProgressTracker
 from dav_platform.operations.retry import RetryPolicy
 from dav_platform.operations.logging import ExecutionLogger
-from dav_platform.operations.exceptions import CancellationError, OperationError
 
 
 class OperationEngine:
@@ -69,8 +67,8 @@ class OperationEngine:
 
         # Register handlers
         if handlers:
-            for action, handler in handlers.items():
-                register_handler(action, handler)
+            for action, handler_fn in handlers.items():
+                register_handler(action, handler_fn)
 
         state = StateManager()
         tracker = ProgressTracker(len(context.execution_plan))

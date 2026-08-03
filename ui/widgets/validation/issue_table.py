@@ -1,6 +1,6 @@
 """Issue explorer table widget (Sprint 7)."""
 
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List
 from nicegui import ui
 from ui.widgets.cards import section_header
 

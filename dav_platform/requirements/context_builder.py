@@ -6,8 +6,6 @@ Builds OperationContext from mode + canonical data.
 import uuid
 from typing import Any, Dict, Optional
 
-import polars as pl
-
 from dav_platform.core.contracts import CanonicalDataset, OperationContext, ProcessingMode
 
 

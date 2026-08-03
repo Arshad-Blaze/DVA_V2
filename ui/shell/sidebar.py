@@ -1,6 +1,5 @@
 """Shell — Navigation sidebar with pipeline state awareness."""
 
-from nicegui import ui
 from ui.controllers.navigation_controller import NavigationController
 from ui.shared import conn_svc, detection_svc, canonical_svc, preview_svc
 from ui.shared import req_svc, op_svc, proc_svc, val_svc

@@ -1,6 +1,6 @@
 """Preview controller — bridges preview service to UI (Sprint 4B)."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from ui.services.preview_service import PreviewService
 from ui.services.notification_service import NotificationService

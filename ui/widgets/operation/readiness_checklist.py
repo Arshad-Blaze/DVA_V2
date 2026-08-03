@@ -1,6 +1,6 @@
 """Readiness checklist widget (Sprint 6A)."""
 
-from typing import Any, Callable, Dict, List
+from typing import Any, Dict, List
 from nicegui import ui
 from ui.widgets.cards import section_header
 

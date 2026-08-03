@@ -10,7 +10,6 @@ from typing import List, Optional
 import polars as pl
 
 from dav_platform.core.contracts import (
-    DiscoveryResult,
     FileType,
     LayoutField,
     RecordTypeInfo,

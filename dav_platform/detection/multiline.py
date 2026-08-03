@@ -3,8 +3,7 @@
 Supports dynamic record type discovery with statistics.
 """
 
-from collections import Counter
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set
 
 from dav_platform.core.contracts import RecordTypeInfo
 

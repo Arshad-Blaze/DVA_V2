@@ -1,6 +1,6 @@
 """Readiness gauge widget."""
 
-from typing import Any, Dict
+from typing import Dict
 from nicegui import ui
 from ui.widgets.cards import section_header
 

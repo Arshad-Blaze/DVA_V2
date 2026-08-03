@@ -4,7 +4,7 @@ Generates a preview of the canonical dataset for UI display.
 Only displays business fields — never exposes retailer column names.
 """
 
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 import polars as pl
 

@@ -5,7 +5,6 @@ Generates production-quality Excel workbooks with multiple sheets.
 
 import os
 from typing import Any, Dict, List, Optional
-from datetime import datetime
 
 from dav_platform.output.exceptions import ExportError
 

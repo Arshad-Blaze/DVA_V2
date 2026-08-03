@@ -3,11 +3,11 @@
 Normalizes common unit of measure values to standard format.
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 import polars as pl
 
-from dav_platform.core.contracts import CandidateMapping, DiscoveryResult
+from dav_platform.core.contracts import DiscoveryResult
 
 
 # Standard UOM mappings

@@ -7,10 +7,8 @@ Uses candidate mappings from Detection with confidence scores.
 from typing import Dict, List
 
 from dav_platform.core.contracts import (
-    CandidateMapping,
     ColumnMapping,
     DiscoveryResult,
-    CANONICAL_COLUMNS,
 )
 
 

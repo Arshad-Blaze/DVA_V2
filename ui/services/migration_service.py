@@ -4,7 +4,7 @@ Ensures persisted data can evolve without breaking existing
 installations. Schema migrations run automatically on startup.
 """
 
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List
 
 from ui.services.storage_service import StorageService
 

@@ -28,7 +28,6 @@ def render_chart_card(
             for key in chart_keys:
                 label = CHART_LABELS.get(key, key.replace("_", " ").title())
                 is_active = key == selected_key
-                color = "primary" if is_active else None
                 ui.button(label, on_click=lambda k=key: on_select(k)).props(f"flat dense size=sm{' color=primary' if is_active else ''}")
 
         if selected:
@@ -41,8 +40,7 @@ def render_chart_card(
                     pct = (values[i] / max_val * 100) if max_val else 0
                     with ui.row().classes("items-center gap-2 w-full"):
                         ui.label(label).classes("text-xs w-24")
-                        with ui.progress(value=pct / 100, size="sm").props("rounded").classes("flex-1"):
-                            pass
+                        ui.linear_progress(value=pct / 100, size="sm").props("rounded").classes("flex-1")
                         ui.label(str(values[i])).classes("text-xs text-gray-500 w-16 text-right")
         else:
             ui.label("Select a chart to view.").classes("text-sm text-gray-500")
