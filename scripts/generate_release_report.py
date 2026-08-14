@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import sys
-import os
 import subprocess
 from datetime import datetime
 from pathlib import Path

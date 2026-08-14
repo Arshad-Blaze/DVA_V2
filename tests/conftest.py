@@ -13,6 +13,24 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 # ============================================================================
+# Marker Assignment
+# ============================================================================
+
+def pytest_collection_modifyitems(config, items):
+    """Auto-assign layer markers based on test directory.
+
+    Keeps the consolidated test runner (`scripts/run_all_tests.py`) working
+    even when individual test files do not declare explicit pytest markers.
+    """
+    for item in items:
+        parts = Path(str(item.fspath)).parts
+        if "unit" in parts:
+            item.add_marker(pytest.mark.unit)
+        elif "integration" in parts:
+            item.add_marker(pytest.mark.integration)
+
+
+# ============================================================================
 # Sample Data Factories
 # ============================================================================
 

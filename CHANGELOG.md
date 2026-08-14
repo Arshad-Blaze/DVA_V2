@@ -2,6 +2,27 @@
 
 All notable changes to DVA Platform are documented in this file.
 
+## [2.0.2] — 2026-08-14
+
+### Integration Audit — Release Readiness
+
+Backend engines fully wired into the UI, stale UI tests updated, and a full integration audit completed.
+
+#### Changed
+
+- **Backend Engine Wiring**: `DetectionService -> DetectionEngine`, `CanonicalService -> CanonicalEngine`, `PreviewService -> CanonicalDataset`, `RequirementService -> RequirementLayer`, `ConnectionService -> LocalDataSource`, `ProcessingService -> ProcessingEngine`, `ValidationService -> ValidationEngine` — UI now exercises the real backend paths with empty-start fallbacks
+- **Operation Service**: Execution steps and summary now source the real `OperationContext`
+- **Processing Auto-Config**: `total_value` calculation no longer emitted when aggregation consumes raw quantity/price columns
+- **UI Schema Alignment**: UI "sales" essential field aligned to backend "price" canonical schema
+- **Test Fixtures**: Shared `tests/ui/conftest.py` fixtures; stale demo-data UI tests updated to empty-start + injected fixture data
+
+#### Fixed
+
+- **Test Runner**: Integration tests now carry the `integration` marker (auto-assigned by directory in root conftest); `scripts/run_all_tests.py` previously reported Integration FAILED because no tests were selected — now all 8 stages pass
+- **Static Analysis**: Unused imports removed from 5 scripts (`environment_validation`, `run_all_tests`, `run_pat`, `startup_validation`, `generate_release_report`); pyflakes clean across the whole repo
+- **Version Consistency**: App version bumped to `2.0.2` across `dav_platform/__init__.py`, home workspace, status bar, admin service, and migration metadata (previously 2.0.0 while CHANGELOG documented 2.0.1)
+- **Dependency Alignment**: `pyarrow` and `duckdb` verified present in the environment
+
 ## [2.0.1] — 2026-07-22
 
 ### Hotfix Sprint — Release Readiness

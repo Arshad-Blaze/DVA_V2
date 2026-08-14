@@ -2,8 +2,6 @@
 """Environment validation — checks system prerequisites for DVA."""
 import sys
 import os
-import shutil
-import stat
 from pathlib import Path
 
 CHECKS = []

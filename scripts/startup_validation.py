@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Startup validation — validates system before launching DVA UI."""
 import sys
-import os
 from pathlib import Path
 
 def main():

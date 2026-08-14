@@ -35,7 +35,7 @@ def render():
             with ui.column():
                 ui.label("DVA Platform v2").classes("text-2xl font-bold")
                 ui.label("Retail Data Processing Platform").classes("text-sm opacity-80")
-            ui.label("v2.0.0").classes("text-xs opacity-60")
+            ui.label("v2.0.2").classes("text-xs opacity-60")
 
     if project_svc().current_project:
         cp = project_svc().current_project
@@ -59,7 +59,7 @@ def render():
         metric_card("Layers", "9", "layers", "primary")
         metric_card("Tests", "993", "science", "positive")
         metric_card("Status", "Ready", "check_circle", "positive")
-        metric_card("Version", "2.0.0", "tag", "info")
+        metric_card("Version", "2.0.2", "tag", "info")
 
     recent = project_svc().recent_projects(4)
     if recent:

@@ -163,7 +163,7 @@ class TestAdminService:
 
     def test_about(self, svc):
         a = svc.about
-        assert a["version"] == "v2.0.0"
+        assert a["version"] == "v2.0.2"
         assert "architecture" in a
 
     # ── Status Bar ───────────────────────────────────────────

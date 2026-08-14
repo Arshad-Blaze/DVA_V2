@@ -63,7 +63,7 @@ class MigrationService:
 
         self._write_metadata({
             "storage_version": CURRENT_STORAGE_VERSION,
-            "application_version": "2.0.0",
+            "application_version": "2.0.2",
             "migrated_at": None,  # filled by serialization's default=str
         })
         self._migration_log.append(

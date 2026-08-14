@@ -20,7 +20,7 @@ SYSTEM_HEALTH_DEMO = {
     "storage": {"used_mb": 128, "available_mb": 2048, "total_mb": 2176, "status": "healthy"},
     "cache": {"entries": 342, "size_mb": 18, "status": "healthy"},
     "connections": {"total": 1, "active": 1, "status": "healthy"},
-    "version": {"app": "v2.0.0", "backend": "v3.1.0", "ui": "v2.0.0"},
+    "version": {"app": "v2.0.2", "backend": "v3.1.0", "ui": "v2.0.2"},
 }
 
 PROJECT_HISTORY_DEMO = [
@@ -53,7 +53,7 @@ DIAGNOSTICS_DEMO = {
     "contracts": {"status": "passed", "contracts": 42, "description": "All contracts validated"},
     "regression": {"status": "passed", "tests": 1236, "description": "All regression tests passing"},
     "performance": {"status": "passed", "baseline_ms": 45, "description": "Under 50ms threshold"},
-    "version": {"app": "v2.0.0", "backend": "v3.1.0", "ui": "v2.0.0"},
+    "version": {"app": "v2.0.2", "backend": "v3.1.0", "ui": "v2.0.2"},
 }
 
 STORAGE_DEMO = {
@@ -68,7 +68,7 @@ STORAGE_DEMO = {
 }
 
 SETTINGS_DEMO = {
-    "application": {"name": "DVA Platform", "version": "v2.0.0", "language": "English", "timezone": "UTC"},
+    "application": {"name": "DVA Platform", "version": "v2.0.2", "language": "English", "timezone": "UTC"},
     "theme": {"dark_mode": False, "accent_color": "blue", "font_size": "medium"},
     "workspace": {"auto_save": True, "confirm_on_exit": True, "show_status_bar": True},
     "preferences": {"rows_per_page": 50, "max_recent_projects": 10, "auto_refresh_interval": 30},
@@ -88,7 +88,7 @@ MAINTENANCE_ACTIONS_DEMO = [
 ]
 
 ABOUT_DEMO = {
-    "version": "v2.0.0",
+    "version": "v2.0.2",
     "architecture": "9-Layer Pipeline Architecture",
     "backend": "Python 3.12, 1236+ tests",
     "ui": "NiceGUI v3.14.0, 400+ tests",
